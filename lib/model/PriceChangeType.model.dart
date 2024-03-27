@@ -1,0 +1,1 @@
+enum PriceChangeType { priceValue, percentValue }
