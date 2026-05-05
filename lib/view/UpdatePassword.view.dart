@@ -12,42 +12,48 @@ import 'package:http/http.dart' as http;
 class _Password {
   late String password;
 }
+
 class UpdatePassword extends StatefulWidget {
   final int userId;
-  const UpdatePassword (this.userId, {super.key});
+  const UpdatePassword(this.userId, {super.key});
   @override
   UpdatePasswordState createState() {
     return UpdatePasswordState();
   }
 }
+
 class UpdatePasswordState extends State<UpdatePassword> {
   bool _pleaseWait = false;
   final _Password _passwordOut = _Password();
-  final PleaseWaitWidget _pleaseWaitWidget = const PleaseWaitWidget(key: ObjectKey("pleaseWaitWidget"));
+  final PleaseWaitWidget _pleaseWaitWidget =
+      const PleaseWaitWidget(key: ObjectKey("pleaseWaitWidget"));
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  _showPleaseWait(bool b) {
+  void _showPleaseWait(bool b) {
     setState(() {
       _pleaseWait = b;
     });
   }
+
   @override
   void initState() {
     super.initState();
     _pleaseWait = false;
   }
+
   @override
   void dispose() {
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final Widget tmpBuilder = Container(
       alignment: Alignment.center,
       child: TextButton(
-        child: const Text (
+        child: const Text(
           'Guardar',
-          style: TextStyle (
+          style: TextStyle(
             fontFamily: 'SF Pro Display',
             fontSize: 16.0,
             fontWeight: FontWeight.w900,
@@ -57,38 +63,40 @@ class UpdatePasswordState extends State<UpdatePassword> {
         ),
         onPressed: () async {
           try {
-            debugPrint ('Entro en el Guardar');
-            debugPrint ('El valor de userId es: ${widget.userId}');
-            _showPleaseWait (true);
-            final Uri url = Uri.parse('$SERVER_IP/changePasswordWithPersoneId/${widget.userId}');
-            final http.Response res = await http.put (
-                url,
-                headers: <String, String>{
-                  'Content-Type': 'application/json; charset=UTF-8',
-                  //'Authorization': jwt
-                },
-                body: jsonEncode(<String, String>{
-                  'password': _passwordOut.password,
-                  'gethash': 'true'
-                })
-            ).timeout(TIMEOUT);
+            debugPrint('Entro en el Guardar');
+            debugPrint('El valor de userId es: ${widget.userId}');
+            _showPleaseWait(true);
+            final Uri url = Uri.parse(
+                '$SERVER_IP/changePasswordWithPersoneId/${widget.userId}');
+            final http.Response res = await http
+                .put(url,
+                    headers: <String, String>{
+                      'Content-Type': 'application/json; charset=UTF-8',
+                      //'Authorization': jwt
+                    },
+                    body: jsonEncode(<String, String>{
+                      'password': _passwordOut.password,
+                      'gethash': 'true'
+                    }))
+                .timeout(TIMEOUT);
             if (res.statusCode == 200) {
               _showPleaseWait(false);
-              debugPrint ('He retornado del Guardar OK.');
+              debugPrint('He retornado del Guardar OK.');
               final String token = json.decode(res.body)['token'].toString();
               final SharedPreferences prefs = await _prefs;
               prefs.setString('token', token);
               if (!context.mounted) return;
-              Navigator.pop (context);
+              Navigator.pop(context);
             } else {
-              debugPrint ('Entro por else del 200.');
-              debugPrint ('El código retornado es: ${res.statusCode}');
-              debugPrint ('El mesaje retornado es: ${json.decode(res.body)['message']}');
-              _showPleaseWait (false);
+              debugPrint('Entro por else del 200.');
+              debugPrint('El código retornado es: ${res.statusCode}');
+              debugPrint(
+                  'El mesaje retornado es: ${json.decode(res.body)['message']}');
+              _showPleaseWait(false);
             }
           } catch (e) {
-            _showPleaseWait (false);
-            debugPrint ('El error es: $e');
+            _showPleaseWait(false);
+            debugPrint('El error es: $e');
             if (!context.mounted) return;
             ShowSnackBar.showSnackBar(context, e.toString(), error: true);
           }
@@ -98,49 +106,54 @@ class UpdatePasswordState extends State<UpdatePassword> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0.0,
-        leading: IconButton (
-          icon: Image.asset ('assets/images/leftArrow.png'),
+        leading: IconButton(
+          icon: Image.asset('assets/images/leftArrow.png'),
           onPressed: () {
-            Navigator.pop (context);  // if click on the <- of the AppBar return the same email that came
+            Navigator.pop(
+                context); // if click on the <- of the AppBar return the same email that came
           },
         ),
-        title: const Text (
+        title: const Text(
           'Cambiar password',
-          style: TextStyle (
+          style: TextStyle(
               fontFamily: 'SF Pro Display',
               fontSize: 20.0,
               fontWeight: FontWeight.w300,
-              color: tanteLadenIconBrown
-          ),
+              color: tanteLadenIconBrown),
           textAlign: TextAlign.center,
         ),
         actions: <Widget>[
-          _pleaseWait ?
-          Stack (
-            key:  const ObjectKey("stack"),
-            alignment: AlignmentDirectional.center,
-            children: [tmpBuilder, _pleaseWaitWidget],
-          ) :
-          Stack (key:  const ObjectKey("stack"), children: [tmpBuilder],)
+          _pleaseWait
+              ? Stack(
+                  key: const ObjectKey("stack"),
+                  alignment: AlignmentDirectional.center,
+                  children: [tmpBuilder, _pleaseWaitWidget],
+                )
+              : Stack(
+                  key: const ObjectKey("stack"),
+                  children: [tmpBuilder],
+                )
         ],
       ),
-      body: ResponsiveWidget (
-        smallScreen: _SmallScreenView (widget.userId, _passwordOut),
+      body: ResponsiveWidget(
+        smallScreen: _SmallScreenView(widget.userId, _passwordOut),
         mediumScreen: _MediumScreenView(widget.userId, _passwordOut),
-        largeScreen: _LargeScreenView (widget.userId, _passwordOut),
+        largeScreen: _LargeScreenView(widget.userId, _passwordOut),
       ),
     );
   }
 }
+
 class _SmallScreenView extends StatefulWidget {
   final int userId;
   final _Password passwordOut;
-  const _SmallScreenView (this.userId, this.passwordOut);
+  const _SmallScreenView(this.userId, this.passwordOut);
   @override
   _SmallScreenViewState createState() {
     return _SmallScreenViewState();
   }
 }
+
 class _SmallScreenViewState extends State<_SmallScreenView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _newPasswordController = TextEditingController();
@@ -153,18 +166,21 @@ class _SmallScreenViewState extends State<_SmallScreenView> {
     widget.passwordOut.password = _newPasswordController.text;
     _newPasswordController.addListener(_onNewPasswordChanged);
   }
+
   @override
   void dispose() {
     super.dispose();
   }
-  _onNewPasswordChanged() {
+
+  void _onNewPasswordChanged() {
     widget.passwordOut.password = _newPasswordController.text;
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Center (
-        child: ListView (
+      child: Center(
+        child: ListView(
           padding: const EdgeInsets.all(20.0),
           children: [
             Row(
@@ -172,9 +188,9 @@ class _SmallScreenViewState extends State<_SmallScreenView> {
               children: [
                 Container(
                   alignment: Alignment.centerLeft,
-                  child: const Text (
+                  child: const Text(
                     'Cambio de contraseña',
-                    style: TextStyle (
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 20.0,
                       fontFamily: 'SF Pro Display',
@@ -185,7 +201,7 @@ class _SmallScreenViewState extends State<_SmallScreenView> {
                 ),
               ],
             ),
-            const SizedBox (height: 15.0),
+            const SizedBox(height: 15.0),
             const Text(
               'Introduzca su nueva contraseña.',
               style: TextStyle(
@@ -198,28 +214,31 @@ class _SmallScreenViewState extends State<_SmallScreenView> {
               maxLines: 2,
               softWrap: true,
             ),
-            const SizedBox (height: 20.0,),
+            const SizedBox(
+              height: 20.0,
+            ),
             Form(
                 autovalidateMode: AutovalidateMode.always,
                 key: _formKey,
-                child: Column (
+                child: Column(
                   children: [
-                    TextFormField (
+                    TextFormField(
                       controller: _newPasswordController,
                       obscureText: _passwordNoVisible,
-                      decoration: InputDecoration (
+                      decoration: InputDecoration(
                         labelText: 'Nueva password',
-                        labelStyle: const TextStyle (
+                        labelStyle: const TextStyle(
                           color: tanteLadenIconBrown,
                         ),
-                        suffixIcon: IconButton (
-                            icon: Icon(_passwordNoVisible ? Icons.visibility_off : Icons.visibility),
+                        suffixIcon: IconButton(
+                            icon: Icon(_passwordNoVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                             onPressed: () {
                               setState(() {
-                                _passwordNoVisible = ! _passwordNoVisible;
+                                _passwordNoVisible = !_passwordNoVisible;
                               });
-                            }
-                        ),
+                            }),
                       ),
                       validator: (String? value) {
                         if (value!.isEmpty) {
@@ -234,23 +253,24 @@ class _SmallScreenViewState extends State<_SmallScreenView> {
                       },
                     ),
                   ],
-                )
-            ),
+                )),
           ],
         ),
       ),
     );
   }
 }
+
 class _MediumScreenView extends StatefulWidget {
   final int userId;
   final _Password passwordOut;
-  const _MediumScreenView (this.userId, this.passwordOut);
+  const _MediumScreenView(this.userId, this.passwordOut);
   @override
   _MediumScreenViewState createState() {
     return _MediumScreenViewState();
   }
 }
+
 class _MediumScreenViewState extends State<_MediumScreenView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _newPasswordController = TextEditingController();
@@ -263,18 +283,21 @@ class _MediumScreenViewState extends State<_MediumScreenView> {
     widget.passwordOut.password = _newPasswordController.text;
     _newPasswordController.addListener(_onNewPasswordChanged);
   }
+
   @override
   void dispose() {
     super.dispose();
   }
-  _onNewPasswordChanged() {
+
+  void _onNewPasswordChanged() {
     widget.passwordOut.password = _newPasswordController.text;
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Center (
-        child: ListView (
+      child: Center(
+        child: ListView(
           padding: const EdgeInsets.all(20.0),
           children: [
             Row(
@@ -282,9 +305,9 @@ class _MediumScreenViewState extends State<_MediumScreenView> {
               children: [
                 Container(
                   alignment: Alignment.centerLeft,
-                  child: const Text (
+                  child: const Text(
                     'Cambio de contraseña',
-                    style: TextStyle (
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 20.0,
                       fontFamily: 'SF Pro Display',
@@ -295,7 +318,7 @@ class _MediumScreenViewState extends State<_MediumScreenView> {
                 ),
               ],
             ),
-            const SizedBox (height: 15.0),
+            const SizedBox(height: 15.0),
             const Text(
               'Introduzca su nueva contraseña.',
               style: TextStyle(
@@ -308,28 +331,31 @@ class _MediumScreenViewState extends State<_MediumScreenView> {
               maxLines: 2,
               softWrap: true,
             ),
-            const SizedBox (height: 20.0,),
+            const SizedBox(
+              height: 20.0,
+            ),
             Form(
                 autovalidateMode: AutovalidateMode.always,
                 key: _formKey,
-                child: Column (
+                child: Column(
                   children: [
-                    TextFormField (
+                    TextFormField(
                       controller: _newPasswordController,
                       obscureText: _passwordNoVisible,
-                      decoration: InputDecoration (
+                      decoration: InputDecoration(
                         labelText: 'Nueva password',
-                        labelStyle: const TextStyle (
+                        labelStyle: const TextStyle(
                           color: tanteLadenIconBrown,
                         ),
-                        suffixIcon: IconButton (
-                            icon: Icon(_passwordNoVisible ? Icons.visibility_off : Icons.visibility),
+                        suffixIcon: IconButton(
+                            icon: Icon(_passwordNoVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                             onPressed: () {
                               setState(() {
-                                _passwordNoVisible = ! _passwordNoVisible;
+                                _passwordNoVisible = !_passwordNoVisible;
                               });
-                            }
-                        ),
+                            }),
                       ),
                       validator: (String? value) {
                         if (value!.isEmpty) {
@@ -344,23 +370,24 @@ class _MediumScreenViewState extends State<_MediumScreenView> {
                       },
                     ),
                   ],
-                )
-            ),
+                )),
           ],
         ),
       ),
     );
   }
 }
+
 class _LargeScreenView extends StatefulWidget {
   final int userId;
   final _Password passwordOut;
-  const _LargeScreenView (this.userId, this.passwordOut);
+  const _LargeScreenView(this.userId, this.passwordOut);
   @override
   _LargeScreenViewState createState() {
     return _LargeScreenViewState();
   }
 }
+
 class _LargeScreenViewState extends State<_LargeScreenView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _newPasswordController = TextEditingController();
@@ -373,18 +400,21 @@ class _LargeScreenViewState extends State<_LargeScreenView> {
     widget.passwordOut.password = _newPasswordController.text;
     _newPasswordController.addListener(_onNewPasswordChanged);
   }
+
   @override
   void dispose() {
     super.dispose();
   }
-  _onNewPasswordChanged() {
+
+  void _onNewPasswordChanged() {
     widget.passwordOut.password = _newPasswordController.text;
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Center (
-        child: ListView (
+      child: Center(
+        child: ListView(
           padding: const EdgeInsets.all(20.0),
           children: [
             Row(
@@ -392,9 +422,9 @@ class _LargeScreenViewState extends State<_LargeScreenView> {
               children: [
                 Container(
                   alignment: Alignment.centerLeft,
-                  child: const Text (
+                  child: const Text(
                     'Cambio de contraseña',
-                    style: TextStyle (
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 20.0,
                       fontFamily: 'SF Pro Display',
@@ -405,7 +435,7 @@ class _LargeScreenViewState extends State<_LargeScreenView> {
                 ),
               ],
             ),
-            const SizedBox (height: 15.0),
+            const SizedBox(height: 15.0),
             const Text(
               'Introduzca su nueva contraseña.',
               style: TextStyle(
@@ -418,28 +448,31 @@ class _LargeScreenViewState extends State<_LargeScreenView> {
               maxLines: 2,
               softWrap: true,
             ),
-            const SizedBox (height: 20.0,),
+            const SizedBox(
+              height: 20.0,
+            ),
             Form(
                 autovalidateMode: AutovalidateMode.always,
                 key: _formKey,
-                child: Column (
+                child: Column(
                   children: [
-                    TextFormField (
+                    TextFormField(
                       controller: _newPasswordController,
                       obscureText: _passwordNoVisible,
-                      decoration: InputDecoration (
+                      decoration: InputDecoration(
                         labelText: 'Nueva password',
-                        labelStyle: const TextStyle (
+                        labelStyle: const TextStyle(
                           color: tanteLadenIconBrown,
                         ),
-                        suffixIcon: IconButton (
-                            icon: Icon(_passwordNoVisible ? Icons.visibility_off : Icons.visibility),
+                        suffixIcon: IconButton(
+                            icon: Icon(_passwordNoVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                             onPressed: () {
                               setState(() {
-                                _passwordNoVisible = ! _passwordNoVisible;
+                                _passwordNoVisible = !_passwordNoVisible;
                               });
-                            }
-                        ),
+                            }),
                       ),
                       validator: (String? value) {
                         if (value!.isEmpty) {
@@ -454,8 +487,7 @@ class _LargeScreenViewState extends State<_LargeScreenView> {
                       },
                     ),
                   ],
-                )
-            ),
+                )),
           ],
         ),
       ),

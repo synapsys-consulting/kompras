@@ -1,11 +1,17 @@
 //const SERVER_IP = 'https://192.168.2.106:9010/server';  // DEVELOPMENT
-//const SERVER_IP = 'http://192.168.2.106:9010/server';  // DEVELOPMENT
+
+const SERVER_IP = 'http://192.168.1.36:9010/server'; // DEVELOPMENT
+
 //const SERVER_IP = 'http://192.168.2.106:9010/server';  // DEVELOPMENT
 //const SERVER_IP = 'http://192.168.18.101:9010/server';  // DEVELOPMENT
 //const SERVER_IP = 'https://localhost/server';  // DEVELOPMENT
 //const SERVER_IP = 'https://3.92.229.110:9000/server';   // PRUEBA
 //const SERVER_IP = 'http://54.87.206.162:9000/server';     // PRODUCTION
-const SERVER_IP = 'http://ec2-54-87-206-162.compute-1.amazonaws.com:9000/server';     // PRODUCTION
+//const SERVER_IP = 'http://ec2-54-87-206-162.compute-1.amazonaws.com:9000/server';     // PRODUCTION
+
+//const SERVER_IP =
+//    'http://ec2-98-86-108-128.compute-1.amazonaws.com:9000/server'; // PRODUCTION
+
 //const SERVER_IP = 'http://54.87.206.162:9000/server';     // PRODUCTION
 //const SERVER_IP = 'https://192.168.1.134:9010/server';
 //const SERVER_IP = 'https://192.168.1.6:9010/server';
@@ -20,5 +26,5 @@ const TIMEOUT = Duration(seconds: 60);
 const COME_FROM_DRAWER = 1;
 const COME_FROM_ANOTHER = 2;
 const MULTIPLYING_FACTOR = 10000;
-const QUANTITY_MAX_PRICE = 999999;    // maximum number of units
+const QUANTITY_MAX_PRICE = 999999; // maximum number of units
 const DEFAULT_PARTNER_ID = 1;

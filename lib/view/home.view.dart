@@ -27,17 +27,18 @@ import 'package:kompras/model/MultiPricesProductAvail.model.dart';
 import 'package:kompras/util/PleaseWaitWidget.util.dart';
 import 'package:kompras/util/configuration.util.dart';
 
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+
 class _MyHomePageState extends State<MyHomePage> {
   late Future<List<MultiPricesProductAvail>> itemsProductsAvailable;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final PleaseWaitWidget _pleaseWaitWidget = const PleaseWaitWidget(key: ObjectKey("pleaseWaitWidget"));
+  final PleaseWaitWidget _pleaseWaitWidget =
+      const PleaseWaitWidget(key: ObjectKey("pleaseWaitWidget"));
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   late bool _isUserLogged;
   late String _name;
@@ -46,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late String _roleId;
   String _role = '';
 
-  _showPleaseWait(bool b) {
+  void _showPleaseWait(bool b) {
     setState(() {
       _pleaseWait = b;
     });
@@ -65,35 +66,40 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   // Private method which get the available products from the database
-  Future<List<MultiPricesProductAvail>> _getProductsAvailable () async {
+  Future<List<MultiPricesProductAvail>> _getProductsAvailable() async {
     final SharedPreferences prefs = await _prefs;
-    String? token = prefs.get ('token')?.toString() ?? '';
-    debugPrint ('El valor de token es: @@$token@@@@');
-    debugPrint ('Antes del if del token == ');
+    String? token = prefs.get('token')?.toString() ?? '';
+    debugPrint('El valor de token es: @@$token@@@@');
+    debugPrint('Antes del if del token == ');
     if (token == '') {
       final Uri url = Uri.parse('$SERVER_IP/getProductsAvailWithOutPartnerId');
-      debugPrint('La URL con la que llamo al inicio de todo es: $SERVER_IP/getProductsAvailWithOutPartnerId');
-      debugPrint('La URL con la que llamo al inicio de todo es: ${url.host}${url.path}');
-      final http.Response res = await http.get (
-          url,
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-            //'Authorization': jwt
-          }
-      );
+      debugPrint(
+          'La URL con la que llamo al inicio de todo es: $SERVER_IP/getProductsAvailWithOutPartnerId');
+      debugPrint(
+          'La URL con la que llamo al inicio de todo es: ${url.host}${url.path}');
+      final http.Response res = await http.get(url, headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        //'Authorization': jwt
+      });
       debugPrint('After the http call.');
       if (res.statusCode == 200) {
-        debugPrint ('The Rest API has responsed.');
-        final List<Map<String, dynamic>> resultListJson = json.decode(res.body)['products'].cast<Map<String, dynamic>>();
-        debugPrint ('Entre medias de la api RESPONSE.');
-        final List<ProductAvail> resultListProducts = resultListJson.map<ProductAvail>((json) => ProductAvail.fromJson(json)).toList();
+        debugPrint('The Rest API has responsed.');
+        final List<Map<String, dynamic>> resultListJson =
+            json.decode(res.body)['products'].cast<Map<String, dynamic>>();
+        debugPrint('Entre medias de la api RESPONSE.');
+        final List<ProductAvail> resultListProducts = resultListJson
+            .map<ProductAvail>((json) => ProductAvail.fromJson(json))
+            .toList();
         final List<MultiPricesProductAvail> resultListMultiPriceProducts = [];
-        int tmpProductCategoryIdPrevious = -20; // -20 is a negative value to initialize this var
+        int tmpProductCategoryIdPrevious =
+            -20; // -20 is a negative value to initialize this var
         String tmpPersonNamePrevious = "";
         for (var element in resultListProducts) {
           //debugPrint ('El producto que cargo es: ' + element.productName);
           //debugPrint ('El producto_code que cargo es: ' + element.productCode.toString());
-          if (element.productCategoryId != tmpProductCategoryIdPrevious && element.personeName != tmpPersonNamePrevious && element.rn == 1) {
+          if (element.productCategoryId != tmpProductCategoryIdPrevious &&
+              element.personeName != tmpPersonNamePrevious &&
+              element.rn == 1) {
             // Change the productCategoryId and the rn = 1, so start a new MultiPriceProductAvail
             tmpProductCategoryIdPrevious = element.productCategoryId;
             tmpPersonNamePrevious = element.personeName;
@@ -128,11 +134,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 quantityMinPrice: element.quantityMinPrice,
                 quantityMaxPrice: element.quantityMaxPrice,
                 productCategoryId: element.productCategoryId,
-                rn: element.rn
-            );
+                rn: element.rn);
             resultListMultiPriceProducts.add(item);
             //Provider.of<Catalog>(context, listen: false).add(element);
-          } else if (element.productCategoryId == tmpProductCategoryIdPrevious && element.personeName == tmpPersonNamePrevious && element.rn > 1) {
+          } else if (element.productCategoryId ==
+                  tmpProductCategoryIdPrevious &&
+              element.personeName == tmpPersonNamePrevious &&
+              element.rn > 1) {
             // The same ProductCategoryId and the same PersoneName, so it is another price of the same MultiPriceProductAvail
             tmpProductCategoryIdPrevious = element.productCategoryId;
             tmpPersonNamePrevious = element.personeName;
@@ -173,8 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 quantityMinPrice: element.quantityMinPrice,
                 quantityMaxPrice: element.quantityMaxPrice,
                 productCategoryId: element.productCategoryId,
-                rn: element.rn
-            );
+                rn: element.rn);
             resultListMultiPriceProducts.add(item);
             //Provider.of<Catalog>(context, listen: false).add(element);
           }
@@ -182,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
         for (var element in resultListMultiPriceProducts) {
           Provider.of<Catalog>(context, listen: false).add(element);
         }
-        debugPrint ('Antes de terminar de responder la API.');
+        debugPrint('Antes de terminar de responder la API.');
         return resultListMultiPriceProducts;
       } else {
         final List<MultiPricesProductAvail> resultListProducts = [];
@@ -191,37 +198,40 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       Map<String, dynamic> payload;
       payload = json.decode(
-          utf8.decode(
-              base64.decode (base64.normalize(token.split(".")[1]))
-          )
-      );
+          utf8.decode(base64.decode(base64.normalize(token.split(".")[1]))));
       debugPrint('El partner_id es: ${payload['partner_id']}');
-      debugPrint('La URL con la que llamo al inicio de todo es: $SERVER_IP/getProductsAvailWithPartnerId/${payload['partner_id']}');
+      debugPrint(
+          'La URL con la que llamo al inicio de todo es: $SERVER_IP/getProductsAvailWithPartnerId/${payload['partner_id']}');
 
-      final Uri url = Uri.parse('$SERVER_IP/getProductsAvailWithPartnerId/${payload['partner_id']}');
-      debugPrint('La URL con la que llamo al inicio de todo es: ${url.host}${url.path}');
+      final Uri url = Uri.parse(
+          '$SERVER_IP/getProductsAvailWithPartnerId/${payload['partner_id']}');
+      debugPrint(
+          'La URL con la que llamo al inicio de todo es: ${url.host}${url.path}');
 
-      final http.Response res = await http.get (
-          url,
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-            //'Authorization': jwt
-          }
-      );
+      final http.Response res = await http.get(url, headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        //'Authorization': jwt
+      });
       debugPrint('After the http call.');
       if (res.statusCode == 200) {
-        debugPrint ('The Rest API has responsed.');
-        final List<Map<String, dynamic>> resultListJson = json.decode(res.body)['products'].cast<Map<String, dynamic>>();
-        debugPrint ('Entre medias de la api RESPONSE.');
-        debugPrint ('Aquí estoy yo');
-        final List<ProductAvail> resultListProducts = resultListJson.map<ProductAvail>((json) => ProductAvail.fromJson(json)).toList();
+        debugPrint('The Rest API has responsed.');
+        final List<Map<String, dynamic>> resultListJson =
+            json.decode(res.body)['products'].cast<Map<String, dynamic>>();
+        debugPrint('Entre medias de la api RESPONSE.');
+        debugPrint('Aquí estoy yo');
+        final List<ProductAvail> resultListProducts = resultListJson
+            .map<ProductAvail>((json) => ProductAvail.fromJson(json))
+            .toList();
         final List<MultiPricesProductAvail> resultListMultiPriceProducts = [];
-        int tmpProductCategoryIdPrevious = -20; // -20 is a negative value to initialize this var
+        int tmpProductCategoryIdPrevious =
+            -20; // -20 is a negative value to initialize this var
         String tmpPersonNamePrevious = "";
         for (var element in resultListProducts) {
           //debugPrint ('El producto que cargo es: ' + element.productName);
           //debugPrint ('El producto_code que cargo es: ' + element.productCode.toString());
-          if (element.productCategoryId != tmpProductCategoryIdPrevious && element.personeName != tmpPersonNamePrevious && element.rn == 1) {
+          if (element.productCategoryId != tmpProductCategoryIdPrevious &&
+              element.personeName != tmpPersonNamePrevious &&
+              element.rn == 1) {
             // Change the productCategoryId and the rn = 1, so start a new MultiPriceProductAvail
             tmpProductCategoryIdPrevious = element.productCategoryId;
             tmpPersonNamePrevious = element.personeName;
@@ -256,10 +266,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 quantityMinPrice: element.quantityMinPrice,
                 quantityMaxPrice: element.quantityMaxPrice,
                 productCategoryId: element.productCategoryId,
-                rn: element.rn
-            );
+                rn: element.rn);
             resultListMultiPriceProducts.add(item);
-          } else if (element.productCategoryId == tmpProductCategoryIdPrevious && element.personeName == tmpPersonNamePrevious && element.rn > 1) {
+          } else if (element.productCategoryId ==
+                  tmpProductCategoryIdPrevious &&
+              element.personeName == tmpPersonNamePrevious &&
+              element.rn > 1) {
             // The same ProductCategoryId and the same PersoneName, so it is another price of the same MultiPriceProductAvail
             tmpProductCategoryIdPrevious = element.productCategoryId;
             tmpPersonNamePrevious = element.personeName;
@@ -299,16 +311,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 quantityMinPrice: element.quantityMinPrice,
                 quantityMaxPrice: element.quantityMaxPrice,
                 productCategoryId: element.productCategoryId,
-                rn: element.rn
-            );
+                rn: element.rn);
             resultListMultiPriceProducts.add(item);
           }
         }
-        debugPrint ('Después del estoy aquí');
+        debugPrint('Después del estoy aquí');
         for (var element in resultListMultiPriceProducts) {
           Provider.of<Catalog>(context, listen: false).add(element);
         }
-        debugPrint ('Antes de terminar de responder la API.');
+        debugPrint('Antes de terminar de responder la API.');
         //return resultListProducts;
         return resultListMultiPriceProducts;
       } else {
@@ -318,7 +329,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Drawer _createEndDrawer (BuildContext context, bool isUserLogged, String name) {
+  Drawer _createEndDrawer(
+      BuildContext context, bool isUserLogged, String name) {
     var catalog = context.watch<Catalog>();
     var cart = context.read<Cart>();
 
@@ -326,27 +338,24 @@ class _MyHomePageState extends State<MyHomePage> {
       if (_role == "SELLER") {
         // The user role lets change the product catalog
         // There is another one menu option
-        return MenuView (
-          child: ListView (
+        return MenuView(
+          child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              ListTile (
-                title: SafeArea (
-                  child: Text (
-                      name,
-                      style: const TextStyle (
+              ListTile(
+                title: SafeArea(
+                  child: Text(name,
+                      style: const TextStyle(
                           fontSize: 24.0,
                           color: tanteLadenIconBrown,
                           fontFamily: 'SF Pro Display',
-                          fontWeight: FontWeight.bold
-                      )
-                  ),
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
               const Divider(),
-              ListTile (
+              ListTile(
                 leading: IconButton(
-                  icon: Image.asset ('assets/images/logoPersonalData.png'),
+                  icon: Image.asset('assets/images/logoPersonalData.png'),
                   onPressed: null,
                 ),
                 title: const Text(
@@ -354,178 +363,183 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => PersonalData(_token)
-                  ));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => PersonalData(_token)));
                 },
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                    icon: Image.asset ('assets/images/logoDirections.png'),
-                    onPressed: null
-                ),
-                title: const Text (
+              ListTile(
+                leading: IconButton(
+                    icon: Image.asset('assets/images/logoDirections.png'),
+                    onPressed: null),
+                title: const Text(
                   'Direcciones',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () {
                   Map<String, dynamic> payload;
-                  payload = json.decode(
-                      utf8.decode(
-                          base64.decode (base64.normalize(_token.split(".")[1]))
-                      )
-                  );
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => ManageAddresses(payload['persone_id'].toString(), payload['user_id'].toString())
-                  ));
+                  payload = json.decode(utf8.decode(
+                      base64.decode(base64.normalize(_token.split(".")[1]))));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManageAddresses(
+                              payload['persone_id'].toString(),
+                              payload['user_id'].toString())));
                 },
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoPaymentMethod1.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoPaymentMethod1.png'),
                   onPressed: null,
                 ),
                 title: const Text(
                   'Métodos de pago',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoMyPurchases.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoMyPurchases.png'),
                   onPressed: null,
                 ),
                 title: const Text(
                   'Mis pedidos',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () {
                   Map<String, dynamic> payload;
-                  payload = json.decode(
-                      utf8.decode(
-                          base64.decode (base64.normalize(_token.split(".")[1]))
-                      )
-                  );
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => PurchaseView(userId: payload['user_id'], partnerId: payload['partner_id'], userRole: payload['role'])
-                  ));
+                  payload = json.decode(utf8.decode(
+                      base64.decode(base64.normalize(_token.split(".")[1]))));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => PurchaseView(
+                              userId: payload['user_id'],
+                              partnerId: payload['partner_id'],
+                              userRole: payload['role'])));
                 },
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset('assets/images/logoHelp.png'),
-                  onPressed: null,
-                ),
-                title: const Text (
-                  'Catálogo',
-                  style: TextStyle (
-                      fontFamily: 'SF Pro Display',
-                      fontSize: 20,
-                      fontWeight: FontWeight.normal
+              ListTile(
+                  leading: IconButton(
+                    icon: Image.asset('assets/images/logoHelp.png'),
+                    onPressed: null,
                   ),
-                ),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => const CatalogManagement()
-                  ));
-                },
-              ),
+                  title: const Text(
+                    'Catálogo',
+                    style: TextStyle(
+                        fontFamily: 'SF Pro Display',
+                        fontSize: 20,
+                        fontWeight: FontWeight.normal),
+                  )
+                  //onTap: () {
+                  //  Navigator.push(
+                  //      context,
+                  //      MaterialPageRoute(
+                  //          builder: (context) => const CatalogManagement()));
+                  //},
+                  ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoHelp.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoHelp.png'),
                   onPressed: null,
                 ),
                 title: const Text(
                   'Ayuda',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoInformation.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoInformation.png'),
                   onPressed: null,
                 ),
-                title: const Text (
+                title: const Text(
                   'Información',
                   style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoExit.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoExit.png'),
                   onPressed: null,
                 ),
-                title: const Text (
+                title: const Text(
                   'Salir',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () async {
                   try {
                     debugPrint('Estoy en el salir.');
                     //debugPrint('Después de watch y read.');
                     final SharedPreferences prefs = await _prefs;
-                    prefs.setString ('token', '');
-                    final Uri url = Uri.parse('$SERVER_IP/getProductsAvailWithOutPartnerId');
-                    final http.Response resProducts = await http.get (
-                        url,
-                        headers: <String, String>{
-                          'Content-Type': 'application/json; charset=UTF-8',
-                          //'Authorization': jwt
-                        }
-                    );
+                    prefs.setString('token', '');
+                    final Uri url = Uri.parse(
+                        '$SERVER_IP/getProductsAvailWithOutPartnerId');
+                    final http.Response resProducts =
+                        await http.get(url, headers: <String, String>{
+                      'Content-Type': 'application/json; charset=UTF-8',
+                      //'Authorization': jwt
+                    });
                     debugPrint('After the http call.');
                     if (resProducts.statusCode == 200) {
-                      debugPrint ('The Rest API has responsed.');
-                      final List<Map<String, dynamic>> resultListJson = json.decode(resProducts.body)['products'].cast<Map<String, dynamic>>();
-                      debugPrint ('Entre medias de la api RESPONSE.');
-                      final List<ProductAvail> resultListProducts = resultListJson.map<ProductAvail>((json) => ProductAvail.fromJson(json)).toList();
-                      final List<MultiPricesProductAvail> resultListMultiPriceProducts = [];
-                      int tmpProductCategoryIdPrevious = -20;   // -20 is a negative value to initialize this var
+                      debugPrint('The Rest API has responsed.');
+                      final List<Map<String, dynamic>> resultListJson = json
+                          .decode(resProducts.body)['products']
+                          .cast<Map<String, dynamic>>();
+                      debugPrint('Entre medias de la api RESPONSE.');
+                      final List<ProductAvail> resultListProducts =
+                          resultListJson
+                              .map<ProductAvail>(
+                                  (json) => ProductAvail.fromJson(json))
+                              .toList();
+                      final List<MultiPricesProductAvail>
+                          resultListMultiPriceProducts = [];
+                      int tmpProductCategoryIdPrevious =
+                          -20; // -20 is a negative value to initialize this var
                       String tmpPersonNamePrevious = "";
-                      debugPrint ('Entre medias de la api RESPONSE.');
+                      debugPrint('Entre medias de la api RESPONSE.');
                       //Provider.of<Catalog>(context, listen: false).clearCatalog();
                       catalog.removeCatalog();
                       for (var element in resultListProducts) {
                         //debugPrint ('El producto que cargo es: ' + element.productName);
                         //debugPrint ('El producto_code que cargo es: ' + element.productCode.toString());
-                        if (element.productCategoryId != tmpProductCategoryIdPrevious && element.personeName != tmpPersonNamePrevious && element.rn == 1) {
+                        if (element.productCategoryId !=
+                                tmpProductCategoryIdPrevious &&
+                            element.personeName != tmpPersonNamePrevious &&
+                            element.rn == 1) {
                           // Change the productCategoryId and the rn = 1, so start a new MultiPriceProductAvail
-                          tmpProductCategoryIdPrevious = element.productCategoryId;
+                          tmpProductCategoryIdPrevious =
+                              element.productCategoryId;
                           tmpPersonNamePrevious = element.personeName;
                           final item = MultiPricesProductAvail(
                               productId: element.productId,
@@ -547,7 +561,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               email: element.email,
                               taxId: element.taxId,
                               taxApply: element.taxApply,
-                              productPriceDiscounted: element.productPriceDiscounted,
+                              productPriceDiscounted:
+                                  element.productPriceDiscounted,
                               totalAmount: element.totalAmount,
                               discountAmount: element.discountAmount,
                               idUnit: element.idUnit,
@@ -558,19 +573,23 @@ class _MyHomePageState extends State<MyHomePage> {
                               quantityMinPrice: element.quantityMinPrice,
                               quantityMaxPrice: element.quantityMaxPrice,
                               productCategoryId: element.productCategoryId,
-                              rn: element.rn
-                          );
+                              rn: element.rn);
                           resultListMultiPriceProducts.add(item);
                           //Provider.of<Catalog>(context, listen: false).add(element);
-                        } else if (element.productCategoryId == tmpProductCategoryIdPrevious && element.personeName == tmpPersonNamePrevious && element.rn > 1) {
+                        } else if (element.productCategoryId ==
+                                tmpProductCategoryIdPrevious &&
+                            element.personeName == tmpPersonNamePrevious &&
+                            element.rn > 1) {
                           // The same ProductCategoryId and the same PersoneName, so it is another price of the same MultiPriceProductAvail
-                          tmpProductCategoryIdPrevious = element.productCategoryId;
+                          tmpProductCategoryIdPrevious =
+                              element.productCategoryId;
                           tmpPersonNamePrevious = element.personeName;
                           resultListMultiPriceProducts.last.add(element);
                           //Provider.of<Catalog>(context, listen: false).addChildrenToFatherElement(tmpProductIdFather, element);
                         } else {
                           // We consider tis case imposible, but if it is, we consider it as a new MultiPriceProductAvail
-                          tmpProductCategoryIdPrevious = element.productCategoryId;
+                          tmpProductCategoryIdPrevious =
+                              element.productCategoryId;
                           tmpPersonNamePrevious = element.personeName;
                           final item = MultiPricesProductAvail(
                               productId: element.productId,
@@ -592,7 +611,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               email: element.email,
                               taxId: element.taxId,
                               taxApply: element.taxApply,
-                              productPriceDiscounted: element.productPriceDiscounted,
+                              productPriceDiscounted:
+                                  element.productPriceDiscounted,
                               totalAmount: element.totalAmount,
                               discountAmount: element.discountAmount,
                               idUnit: element.idUnit,
@@ -603,27 +623,28 @@ class _MyHomePageState extends State<MyHomePage> {
                               quantityMinPrice: element.quantityMinPrice,
                               quantityMaxPrice: element.quantityMaxPrice,
                               productCategoryId: element.productCategoryId,
-                              rn: element.rn
-                          );
+                              rn: element.rn);
                           resultListMultiPriceProducts.add(item);
                           //Provider.of<Catalog>(context, listen: false).add(element);
                         }
                       }
                       for (var element in resultListMultiPriceProducts) {
-                        Provider.of<Catalog>(context, listen: false).add(element);
+                        Provider.of<Catalog>(context, listen: false)
+                            .add(element);
                       }
-                      debugPrint ('Antes de terminar de responder la API.');
+                      debugPrint('Antes de terminar de responder la API.');
                       if (cart.numItems > 0) {
                         //Add the elements which are in the cart to the catalog
                         debugPrint('El número de items es:${cart.numItems}');
                         for (var element in cart.items) {
-                          debugPrint('El valor de product_name es: ${element.productName}');
+                          debugPrint(
+                              'El valor de product_name es: ${element.productName}');
                           if (element.partnerId != DEFAULT_PARTNER_ID) {
                             cart.remove(element);
                           }
                         }
                       }
-                      debugPrint ('Despues de terminar de responder la API.');
+                      debugPrint('Despues de terminar de responder la API.');
                     }
                     Navigator.pop(context);
                   } catch (err) {
@@ -637,27 +658,24 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       } else {
         // BUYER, PRO_DELIBERY, KRR_DELIBERY
-        return MenuView (
-          child: ListView (
+        return MenuView(
+          child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              ListTile (
-                title: SafeArea (
-                  child: Text (
-                      name,
-                      style: const TextStyle (
+              ListTile(
+                title: SafeArea(
+                  child: Text(name,
+                      style: const TextStyle(
                           fontSize: 24.0,
                           color: tanteLadenIconBrown,
                           fontFamily: 'SF Pro Display',
-                          fontWeight: FontWeight.bold
-                      )
-                  ),
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
               const Divider(),
-              ListTile (
+              ListTile(
                 leading: IconButton(
-                  icon: Image.asset ('assets/images/logoPersonalData.png'),
+                  icon: Image.asset('assets/images/logoPersonalData.png'),
                   onPressed: null,
                 ),
                 title: const Text(
@@ -665,178 +683,183 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => PersonalData(_token)
-                  ));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => PersonalData(_token)));
                 },
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                    icon: Image.asset ('assets/images/logoDirections.png'),
-                    onPressed: null
-                ),
-                title: const Text (
+              ListTile(
+                leading: IconButton(
+                    icon: Image.asset('assets/images/logoDirections.png'),
+                    onPressed: null),
+                title: const Text(
                   'Direcciones',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () {
                   Map<String, dynamic> payload;
-                  payload = json.decode(
-                      utf8.decode(
-                          base64.decode (base64.normalize(_token.split(".")[1]))
-                      )
-                  );
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => ManageAddresses(payload['persone_id'].toString(), payload['user_id'].toString())
-                  ));
+                  payload = json.decode(utf8.decode(
+                      base64.decode(base64.normalize(_token.split(".")[1]))));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ManageAddresses(
+                              payload['persone_id'].toString(),
+                              payload['user_id'].toString())));
                 },
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoPaymentMethod1.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoPaymentMethod1.png'),
                   onPressed: null,
                 ),
                 title: const Text(
                   'Métodos de pago',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoMyPurchases.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoMyPurchases.png'),
                   onPressed: null,
                 ),
                 title: const Text(
                   'Mis pedidos',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () {
                   Map<String, dynamic> payload;
-                  payload = json.decode(
-                      utf8.decode(
-                          base64.decode (base64.normalize(_token.split(".")[1]))
-                      )
-                  );
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => PurchaseView(userId: payload['user_id'], partnerId: payload['partner_id'], userRole: payload['role'])
-                  ));
+                  payload = json.decode(utf8.decode(
+                      base64.decode(base64.normalize(_token.split(".")[1]))));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => PurchaseView(
+                              userId: payload['user_id'],
+                              partnerId: payload['partner_id'],
+                              userRole: payload['role'])));
                 },
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
+              ListTile(
+                leading: IconButton(
                   icon: Image.asset('assets/images/logoUpCatalog.png'),
                   onPressed: null,
                 ),
-                title: const Text (
+                title: const Text(
                   'Catálogo',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (context) => const CatalogManagement()
-                  ));
-                },
+                //onTap: () {
+                //  Navigator.push(
+                //      context,
+                //      MaterialPageRoute(
+                //          builder: (context) => const CatalogManagement()));
+                //},
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoHelp.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoHelp.png'),
                   onPressed: null,
                 ),
                 title: const Text(
                   'Ayuda',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoInformation.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoInformation.png'),
                   onPressed: null,
                 ),
-                title: const Text (
+                title: const Text(
                   'Información',
                   style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
               const Divider(),
-              ListTile (
-                leading: IconButton (
-                  icon: Image.asset ('assets/images/logoExit.png'),
+              ListTile(
+                leading: IconButton(
+                  icon: Image.asset('assets/images/logoExit.png'),
                   onPressed: null,
                 ),
-                title: const Text (
+                title: const Text(
                   'Salir',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontFamily: 'SF Pro Display',
                       fontSize: 20,
-                      fontWeight: FontWeight.normal
-                  ),
+                      fontWeight: FontWeight.normal),
                 ),
                 onTap: () async {
                   try {
                     debugPrint('Estoy en el salir.');
                     //debugPrint('Después de watch y read.');
                     final SharedPreferences prefs = await _prefs;
-                    prefs.setString ('token', '');
-                    final Uri url = Uri.parse('$SERVER_IP/getProductsAvailWithOutPartnerId');
-                    final http.Response resProducts = await http.get (
-                        url,
-                        headers: <String, String>{
-                          'Content-Type': 'application/json; charset=UTF-8',
-                          //'Authorization': jwt
-                        }
-                    );
+                    prefs.setString('token', '');
+                    final Uri url = Uri.parse(
+                        '$SERVER_IP/getProductsAvailWithOutPartnerId');
+                    final http.Response resProducts =
+                        await http.get(url, headers: <String, String>{
+                      'Content-Type': 'application/json; charset=UTF-8',
+                      //'Authorization': jwt
+                    });
                     debugPrint('After the http call.');
                     if (resProducts.statusCode == 200) {
-                      debugPrint ('The Rest API has responsed.');
-                      final List<Map<String, dynamic>> resultListJson = json.decode(resProducts.body)['products'].cast<Map<String, dynamic>>();
-                      debugPrint ('Entre medias de la api RESPONSE.');
-                      final List<ProductAvail> resultListProducts = resultListJson.map<ProductAvail>((json) => ProductAvail.fromJson(json)).toList();
-                      final List<MultiPricesProductAvail> resultListMultiPriceProducts = [];
-                      int tmpProductCategoryIdPrevious = -20; // -20 is a negative value to initialize this var
+                      debugPrint('The Rest API has responsed.');
+                      final List<Map<String, dynamic>> resultListJson = json
+                          .decode(resProducts.body)['products']
+                          .cast<Map<String, dynamic>>();
+                      debugPrint('Entre medias de la api RESPONSE.');
+                      final List<ProductAvail> resultListProducts =
+                          resultListJson
+                              .map<ProductAvail>(
+                                  (json) => ProductAvail.fromJson(json))
+                              .toList();
+                      final List<MultiPricesProductAvail>
+                          resultListMultiPriceProducts = [];
+                      int tmpProductCategoryIdPrevious =
+                          -20; // -20 is a negative value to initialize this var
                       String tmpPersonNamePrevious = "";
-                      debugPrint ('Entre medias de la api RESPONSE.');
+                      debugPrint('Entre medias de la api RESPONSE.');
                       //Provider.of<Catalog>(context, listen: false).clearCatalog();
                       catalog.removeCatalog();
                       for (var element in resultListProducts) {
                         //debugPrint ('El producto que cargo es: ' + element.productName);
                         //debugPrint ('El producto_code que cargo es: ' + element.productCode.toString());
-                        if (element.productCategoryId != tmpProductCategoryIdPrevious && element.personeName != tmpPersonNamePrevious && element.rn == 1) {
+                        if (element.productCategoryId !=
+                                tmpProductCategoryIdPrevious &&
+                            element.personeName != tmpPersonNamePrevious &&
+                            element.rn == 1) {
                           // Change the productCategoryId and the rn = 1, so start a new MultiPriceProductAvail
-                          tmpProductCategoryIdPrevious = element.productCategoryId;
+                          tmpProductCategoryIdPrevious =
+                              element.productCategoryId;
                           tmpPersonNamePrevious = element.personeName;
                           final item = MultiPricesProductAvail(
                               productId: element.productId,
@@ -858,7 +881,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               email: element.email,
                               taxId: element.taxId,
                               taxApply: element.taxApply,
-                              productPriceDiscounted: element.productPriceDiscounted,
+                              productPriceDiscounted:
+                                  element.productPriceDiscounted,
                               totalAmount: element.totalAmount,
                               discountAmount: element.discountAmount,
                               idUnit: element.idUnit,
@@ -869,19 +893,23 @@ class _MyHomePageState extends State<MyHomePage> {
                               quantityMinPrice: element.quantityMinPrice,
                               quantityMaxPrice: element.quantityMaxPrice,
                               productCategoryId: element.productCategoryId,
-                              rn: element.rn
-                          );
+                              rn: element.rn);
                           resultListMultiPriceProducts.add(item);
                           //Provider.of<Catalog>(context, listen: false).add(element);
-                        } else if (element.productCategoryId == tmpProductCategoryIdPrevious && element.personeName == tmpPersonNamePrevious && element.rn > 1) {
+                        } else if (element.productCategoryId ==
+                                tmpProductCategoryIdPrevious &&
+                            element.personeName == tmpPersonNamePrevious &&
+                            element.rn > 1) {
                           // The same ProductCategoryId and the same PersoneName, so it is another price of the same MultiPriceProductAvail
-                          tmpProductCategoryIdPrevious = element.productCategoryId;
+                          tmpProductCategoryIdPrevious =
+                              element.productCategoryId;
                           tmpPersonNamePrevious = element.personeName;
                           resultListMultiPriceProducts.last.add(element);
                           //Provider.of<Catalog>(context, listen: false).addChildrenToFatherElement(tmpProductIdFather, element);
                         } else {
                           // We consider tis case imposible, but if it is, we consider it as a new MultiPriceProductAvail
-                          tmpProductCategoryIdPrevious = element.productCategoryId;
+                          tmpProductCategoryIdPrevious =
+                              element.productCategoryId;
                           tmpPersonNamePrevious = element.personeName;
                           final item = MultiPricesProductAvail(
                               productId: element.productId,
@@ -903,7 +931,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               email: element.email,
                               taxId: element.taxId,
                               taxApply: element.taxApply,
-                              productPriceDiscounted: element.productPriceDiscounted,
+                              productPriceDiscounted:
+                                  element.productPriceDiscounted,
                               totalAmount: element.totalAmount,
                               discountAmount: element.discountAmount,
                               idUnit: element.idUnit,
@@ -914,27 +943,28 @@ class _MyHomePageState extends State<MyHomePage> {
                               quantityMinPrice: element.quantityMinPrice,
                               quantityMaxPrice: element.quantityMaxPrice,
                               productCategoryId: element.productCategoryId,
-                              rn: element.rn
-                          );
+                              rn: element.rn);
                           resultListMultiPriceProducts.add(item);
                           //Provider.of<Catalog>(context, listen: false).add(element);
                         }
                       }
                       for (var element in resultListMultiPriceProducts) {
-                        Provider.of<Catalog>(context, listen: false).add(element);
+                        Provider.of<Catalog>(context, listen: false)
+                            .add(element);
                       }
-                      debugPrint ('Antes de terminar de responder la API.');
+                      debugPrint('Antes de terminar de responder la API.');
                       if (cart.numItems > 0) {
                         //Add the elements which are in the cart to the catalog
                         debugPrint('El número de items es:${cart.numItems}');
                         for (var element in cart.items) {
-                          debugPrint('El valor de product_name es: ${element.productName}');
+                          debugPrint(
+                              'El valor de product_name es: ${element.productName}');
                           if (element.partnerId != DEFAULT_PARTNER_ID) {
                             cart.remove(element);
                           }
                         }
                       }
-                      debugPrint ('Despues de terminar de responder la API.');
+                      debugPrint('Despues de terminar de responder la API.');
                     }
                     Navigator.pop(context);
                   } catch (err) {
@@ -948,45 +978,45 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }
     } else {
-      return MenuView (
-        child: ListView (
+      return MenuView(
+        child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const ListTile (
-                title: SafeArea (
-                  child: Text('Invitado',
-                    style: TextStyle (
-                        fontSize: 24.0,
-                        color: tanteLadenIconBrown,
-                        fontFamily: 'SF Pro Display',
-                        fontWeight: FontWeight.bold
-                    ),
-                  ),
-                )
-            ),
+            const ListTile(
+                title: SafeArea(
+              child: Text(
+                'Invitado',
+                style: TextStyle(
+                    fontSize: 24.0,
+                    color: tanteLadenIconBrown,
+                    fontFamily: 'SF Pro Display',
+                    fontWeight: FontWeight.bold),
+              ),
+            )),
             const Divider(),
             const SizedBox(height: 50.0),
-            const Padding (
-              padding: EdgeInsets.symmetric (horizontal: 15.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15.0),
               child: Center(
-                child: Text (
+                child: Text(
                   'Identifícate',
-                  style: TextStyle (
+                  style: TextStyle(
                       fontSize: 20.0,
                       color: tanteLadenOnPrimary,
                       fontFamily: 'SF Pro Display',
-                      fontWeight: FontWeight.bold
-                  ),
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-            const SizedBox (height: 10.0,),
-            const Padding (
+            const SizedBox(
+              height: 10.0,
+            ),
+            const Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.0),
-              child: Center (
-                child: Text (
+              child: Center(
+                child: Text(
                   'Para poder comprar, necesitas una cuenta, así podrás comprar más rápido y también te podremos dar un mejor servicio.',
-                  style: TextStyle (
+                  style: TextStyle(
                     fontSize: 16.0,
                     fontFamily: 'SF Pro Display',
                     fontWeight: FontWeight.normal,
@@ -998,77 +1028,75 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            const SizedBox (height: 20.0,),
-            Padding (
+            const SizedBox(
+              height: 20.0,
+            ),
+            Padding(
               padding: const EdgeInsets.all(15.0),
-              child: GestureDetector (
-                child: Container (
+              child: GestureDetector(
+                child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 80.0),
                   alignment: Alignment.center,
-                  decoration: BoxDecoration (
+                  decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.circular(8.0),
-                      gradient: const LinearGradient(
-                          colors: <Color>[
-                            Color (0xFF833C26),
-                            //Color (0XFF863F25),
-                            //Color (0xFF8E4723),
-                            Color (0xFF9A541F),
-                            //Color (0xFFB16D1A),
-                            //Color (0xFFDE9C0D),
-                            Color (0xFFF9B806),
-                            Color (0XFFFFC107),
-                          ]
-                      )
-                  ),
+                      gradient: const LinearGradient(colors: <Color>[
+                        Color(0xFF833C26),
+                        //Color (0XFF863F25),
+                        //Color (0xFF8E4723),
+                        Color(0xFF9A541F),
+                        //Color (0xFFB16D1A),
+                        //Color (0xFFDE9C0D),
+                        Color(0xFFF9B806),
+                        Color(0XFFFFC107),
+                      ])),
                   height: 64.0,
                   child: const Text(
                     'Identifícate',
                     style: TextStyle(
-                        fontSize: 18.0,
-                        color: tanteLadenBackgroundWhite
-                    ),
+                        fontSize: 18.0, color: tanteLadenBackgroundWhite),
                   ),
                 ),
                 onTap: () {
-                  Navigator.push (
+                  Navigator.push(
                       context,
-                      MaterialPageRoute (
-                          builder: (context) => (const LoginView(reason: COME_FROM_DRAWER))   //  1 the call comes from the drawer. 2 the call comes from cart.view.dart
-                      )
-                  );
+                      MaterialPageRoute(
+                          builder: (context) => (const LoginView(
+                              reason:
+                                  COME_FROM_DRAWER)) //  1 the call comes from the drawer. 2 the call comes from cart.view.dart
+                          ));
                 },
               ),
             ),
-            const SizedBox (height: 20.0,),
+            const SizedBox(
+              height: 20.0,
+            ),
             const Divider(),
-            ListTile (
-              leading: IconButton (
-                icon: Image.asset ('assets/images/logoHelp.png'),
+            ListTile(
+              leading: IconButton(
+                icon: Image.asset('assets/images/logoHelp.png'),
                 onPressed: null,
               ),
               title: const Text(
                 'Ayuda',
-                style: TextStyle (
+                style: TextStyle(
                     fontFamily: 'SF Pro Display',
                     fontSize: 20,
-                    fontWeight: FontWeight.normal
-                ),
+                    fontWeight: FontWeight.normal),
               ),
             ),
             const Divider(),
-            ListTile (
-              leading: IconButton (
-                icon: Image.asset ('assets/images/logoInformation.png'),
+            ListTile(
+              leading: IconButton(
+                icon: Image.asset('assets/images/logoInformation.png'),
                 onPressed: null,
               ),
-              title: const Text (
+              title: const Text(
                 'Información',
                 style: TextStyle(
                     fontFamily: 'SF Pro Display',
                     fontSize: 20,
-                    fontWeight: FontWeight.normal
-                ),
+                    fontWeight: FontWeight.normal),
               ),
             ),
             const Divider(),
@@ -1086,36 +1114,36 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    Widget tmpBuilder = IconButton (
-        icon: Image.asset ('assets/images/profile.png'),
+    Widget tmpBuilder = IconButton(
+        icon: Image.asset('assets/images/profile.png'),
         tooltip: 'Perfil',
         onPressed: () async {
           try {
             _showPleaseWait(true);
             final SharedPreferences prefs = await _prefs;
-            String? token = prefs.get ('token')?.toString() ?? '';
-            debugPrint ('El token es: $token');
-            debugPrint ('El token es #######: $token');
+            String? token = prefs.get('token')?.toString() ?? '';
+            debugPrint('El token es: $token');
+            debugPrint('El token es #######: $token');
             if (token == '') {
-              debugPrint ('Me he metido en la parte del If. Por lo que NO hay token.');
+              debugPrint(
+                  'Me he metido en la parte del If. Por lo que NO hay token.');
               _isUserLogged = false;
               _name = '';
               _token = '';
             } else {
-              debugPrint ('Me he metido en la parte del else. Por lo que hay token.');
-              debugPrint ('El token es: $token');
-              debugPrint ('JUSTO ANTES DE PARTIR EL TOKEN.');
+              debugPrint(
+                  'Me he metido en la parte del else. Por lo que hay token.');
+              debugPrint('El token es: $token');
+              debugPrint('JUSTO ANTES DE PARTIR EL TOKEN.');
               Map<String, dynamic> payload;
-              payload = json.decode(
-                  utf8.decode(
-                      base64.decode (base64.normalize(token.split(".")[1]))
-                  )
-              );
-              debugPrint ('JUSTO DESPUES DE PARTIR EL TOKEN.');
+              payload = json.decode(utf8.decode(
+                  base64.decode(base64.normalize(token.split(".")[1]))));
+              debugPrint('JUSTO DESPUES DE PARTIR EL TOKEN.');
               _token = token;
               _isUserLogged = true;
               debugPrint('Antes de sacar el payload el nombre y el apellido');
-              _name = payload['user_firstname'] + ' ' + payload['user_lastname'];
+              _name =
+                  payload['user_firstname'] + ' ' + payload['user_lastname'];
               debugPrint('Antes de sacar el rid');
               //_roleId = payload['rid'];
               debugPrint('Antes de sacar el role');
@@ -1127,100 +1155,100 @@ class _MyHomePageState extends State<MyHomePage> {
             _scaffoldKey.currentState?.openEndDrawer();
           } catch (e) {
             if (!context.mounted) return;
-            debugPrint ('ME VOY POR EL ERROR AL PARTIR EL TOKEN.');
+            debugPrint('ME VOY POR EL ERROR AL PARTIR EL TOKEN.');
             ShowSnackBar.showSnackBar(context, e.toString(), error: true);
           }
-        }
-    );
-    return Scaffold (
+        });
+    return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar (
+      appBar: AppBar(
         //backgroundColor: Theme.of(context).primaryColor,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        leading: Builder (
-            builder: (BuildContext context) {
-              return Container (
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  //icon: Image.asset('assets/images/cart_fill_round.png'),
-                  icon: Image.asset('assets/images/logoPantallaInicioAmber.png'),
-                  onPressed: null,
-                ),
-              );
-            }
-        ),
-        title: SizedBox (
+        leading: Builder(builder: (BuildContext context) {
+          return Container(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              //icon: Image.asset('assets/images/cart_fill_round.png'),
+              icon: Image.asset('assets/images/logoPantallaInicioAmber.png'),
+              onPressed: null,
+            ),
+          );
+        }),
+        title: SizedBox(
           height: kToolbarHeight,
-          child: Row (
+          child: Row(
             children: [
               Flexible(
                 flex: 1,
                 child: IconButton(
                     icon: Image.asset('assets/images/search_left.png'),
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => const LookingForProducts()
-                      ));
-                    }
-                ),
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const LookingForProducts()));
+                    }),
               ),
               const Spacer(),
               Flexible(
                 flex: 1,
                 child: IconButton(
                     icon: Image.asset('assets/images/love.png'),
-                    onPressed: null
-                ),
+                    onPressed: null),
               ),
               Flexible(
                 flex: 1,
-                child: Consumer <Cart>(
-                  builder: (context, cart, child) => cart.numItems > 0 ?
-                  Stack (
-                    alignment: AlignmentDirectional.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                        alignment: AlignmentDirectional.center,
-                        child: Text(
-                          cart.numItems.toString(),
-                          style: const TextStyle (
-                              fontWeight: FontWeight.bold,
-                              backgroundColor: Colors.white,
-                              fontSize: 10.0,
-                              fontFamily: 'SF Pro Display',
-                              fontStyle: FontStyle.normal,
-                              color: Colors.black
-                          ),
+                child: Consumer<Cart>(
+                  builder: (context, cart, child) => cart.numItems > 0
+                      ? Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                              alignment: AlignmentDirectional.center,
+                              child: Text(
+                                cart.numItems.toString(),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    backgroundColor: Colors.white,
+                                    fontSize: 10.0,
+                                    fontFamily: 'SF Pro Display',
+                                    fontStyle: FontStyle.normal,
+                                    color: Colors.black),
+                              ),
+                            ),
+                            IconButton(
+                                icon: Image.asset(
+                                    'assets/images/shopping_cart.png'),
+                                onPressed: () async {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CartView()));
+                                })
+                          ],
+                        )
+                      : Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: [
+                            Container(
+                              alignment: AlignmentDirectional.center,
+                              child: IconButton(
+                                  icon: Image.asset(
+                                      'assets/images/shopping_cart.png'),
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const CartView()));
+                                  }),
+                            ),
+                          ],
                         ),
-                      ),
-                      IconButton(
-                          icon: Image.asset('assets/images/shopping_cart.png'),
-                          onPressed: () async {
-                            Navigator.push(context, MaterialPageRoute(
-                                builder: (context) => const CartView()
-                            ));
-                          }
-                      )
-                    ],
-                  ):
-                  Stack (
-                    alignment: AlignmentDirectional.center,
-                    children: [
-                      Container(
-                        alignment: AlignmentDirectional.center,
-                        child: IconButton(
-                            icon: Image.asset('assets/images/shopping_cart.png'),
-                            onPressed: (){
-                              Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) => const CartView()
-                              ));
-                            }
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               )
             ],
@@ -1228,33 +1256,34 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         actions: <Widget>[
           _pleaseWait
-              ? Stack (key:  const ObjectKey("stack"), alignment: AlignmentDirectional.center, children: [tmpBuilder, _pleaseWaitWidget],)
-              : Stack (key:  const ObjectKey("stack"), children: [tmpBuilder])
+              ? Stack(
+                  key: const ObjectKey("stack"),
+                  alignment: AlignmentDirectional.center,
+                  children: [tmpBuilder, _pleaseWaitWidget],
+                )
+              : Stack(key: const ObjectKey("stack"), children: [tmpBuilder])
         ],
         elevation: 0.0,
       ),
-      endDrawer: _createEndDrawer (context, _isUserLogged,_name),
-      body: FutureBuilder <List<MultiPricesProductAvail>> (
+      endDrawer: _createEndDrawer(context, _isUserLogged, _name),
+      body: FutureBuilder<List<MultiPricesProductAvail>>(
           future: itemsProductsAvailable,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               //final List<ProductAvail>listProductsAvail = snapshot.data;
-              return ResponsiveWidget (
+              return ResponsiveWidget(
                 largeScreen: _LargeScreen(),
                 mediumScreen: _MediumScreen(),
                 smallScreen: _SmallScreen(),
               );
             } else if (snapshot.hasError) {
-              return Center (
+              return Center(
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Error. ${snapshot.error}')
-                    ]
-                ),
+                    children: [Text('Error. ${snapshot.error}')]),
               );
             } else {
-              return const Center (
+              return const Center(
                 child: SizedBox(
                   width: 60,
                   height: 60,
@@ -1262,20 +1291,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               );
             }
-          }
-      ),
+          }),
     );
   }
 }
+
 class _SmallScreen extends StatefulWidget {
   @override
   _SmallScreenState createState() => _SmallScreenState();
 }
-class _SmallScreenState extends State<_SmallScreen>{
+
+class _SmallScreenState extends State<_SmallScreen> {
   @override
   void initState() {
     super.initState();
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -1285,39 +1316,35 @@ class _SmallScreenState extends State<_SmallScreen>{
   Widget build(BuildContext context) {
     var catalog = context.watch<Catalog>();
     var cart = context.read<Cart>();
-    return SafeArea (
-      child: Padding (
+    return SafeArea(
+      child: Padding(
           padding: const EdgeInsets.only(top: 5.0),
-          child: GridView.builder (
+          child: GridView.builder(
               itemCount: catalog.numItems,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 200.0 / 303.0
-              ),
+                  crossAxisCount: 2, childAspectRatio: 200.0 / 303.0),
               itemBuilder: (BuildContext context, int index) {
-                return Card (
+                return Card(
                   clipBehavior: Clip.antiAlias,
                   elevation: 0,
                   shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0)
-                  ),
-                  child: LayoutBuilder (
+                      borderRadius: BorderRadius.circular(0.0)),
+                  child: LayoutBuilder(
                     builder: (context, constraints) {
-                      return Column (
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              GestureDetector (
+                              GestureDetector(
                                 onTap: () {
-                                  Navigator.push (
+                                  Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => ProductView(catalog.items[index])
-                                      )
-                                  );
+                                          builder: (context) => ProductView(
+                                              catalog.items[index])));
                                 },
                                 child: Container(
                                   //padding: EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
@@ -1326,94 +1353,136 @@ class _SmallScreenState extends State<_SmallScreen>{
                                   child: AspectRatio(
                                     aspectRatio: 3.0 / 2.0,
                                     child: CachedNetworkImage(
-                                      placeholder: (context, url) => const CircularProgressIndicator(),
-                                      imageUrl: '$SERVER_IP$IMAGES_DIRECTORY${catalog.items[index].productCode}_0.gif',
+                                      placeholder: (context, url) =>
+                                          const CircularProgressIndicator(),
+                                      imageUrl:
+                                          '$SERVER_IP$IMAGES_DIRECTORY${catalog.items[index].productCode}_0.gif',
                                       fit: BoxFit.scaleDown,
-                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
                                     ),
                                   ),
                                 ),
                               )
                             ],
                           ),
-                          Container (
-                            padding: const EdgeInsets.fromLTRB (15.0, 0.0, 0.0, 0.0),
-                            child: Row (
+                          Container(
+                            padding:
+                                const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Container (
+                                Container(
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Image.asset('assets/images/00001.png'),
                                 ),
-                                Container (
+                                Container(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Text.rich (
-                                    TextSpan (
-                                        text: NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((catalog.items[index].totalAmountAccordingQuantity/MULTIPLYING_FACTOR).toString())),
-                                        style: const TextStyle (
+                                  child: Text.rich(
+                                    TextSpan(
+                                        text: NumberFormat.currency(
+                                                locale: 'es_ES',
+                                                symbol: '€',
+                                                decimalDigits: 2)
+                                            .format(double.parse((catalog
+                                                        .items[index]
+                                                        .totalAmountAccordingQuantity /
+                                                    MULTIPLYING_FACTOR)
+                                                .toString())),
+                                        style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 24.0,
                                           fontFamily: 'SF Pro Display',
                                         ),
                                         //textAlign: TextAlign.start
                                         children: <TextSpan>[
-                                          TextSpan (
-                                            text: catalog.items[index].totalAmountAccordingQuantity == catalog.items[index].totalAmount
+                                          TextSpan(
+                                            text: catalog.items[index]
+                                                        .totalAmountAccordingQuantity ==
+                                                    catalog.items[index]
+                                                        .totalAmount
                                                 ? ''
-                                                : ' (${NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((catalog.items[index].totalAmount/MULTIPLYING_FACTOR).toString()))})',
-                                            style: const TextStyle (
+                                                : ' (${NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 2).format(double.parse((catalog.items[index].totalAmount / MULTIPLYING_FACTOR).toString()))})',
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 11.0,
                                               fontFamily: 'SF Pro Display',
                                               color: Color(0xFF6C6D77),
                                             ),
                                           )
-                                        ]
-                                    ),
+                                        ]),
                                     textAlign: TextAlign.start,
                                   ),
                                 ),
-                                catalog.items[index].quantityMaxPrice != QUANTITY_MAX_PRICE ? Container (
-                                  padding: EdgeInsets.zero,
-                                  width: 20.0,
-                                  height: 20.0,
-                                  child: IconButton (
-                                    alignment: Alignment.centerRight,
-                                    padding: EdgeInsets.zero,
-                                    icon: Image.asset (
-                                      'assets/images/logoInfo.png',
-                                      //fit: BoxFit.fill,
-                                      width: 20.0,
-                                      height: 20.0,
-                                    ),
-                                    iconSize: 20.0,
-                                    onPressed: () {
-                                      final List<MultiPriceListElement> listMultiPriceListElement = [];
-                                      if (catalog.items[index].quantityMaxPrice != QUANTITY_MAX_PRICE) {
-                                        // There is multiprice for this product
-                                        final item = MultiPriceListElement(catalog.items[index].quantityMinPrice, catalog.items[index].quantityMaxPrice, catalog.items[index].totalAmount);
-                                        listMultiPriceListElement.add(item);
-                                        catalog.items[index].items.where((element) => element.partnerId != 1)
-                                            .forEach((element) {
-                                          final item = MultiPriceListElement(element.quantityMinPrice, element.quantityMaxPrice, element.totalAmount);
-                                          listMultiPriceListElement.add(item);
-                                        });
-                                      }
-                                      DisplayDialog.displayInformationAsATable (context, 'Descuentos por cantidad comprada:', listMultiPriceListElement);
-                                    },
-                                  ),
-                                ) : Container()
+                                catalog.items[index].quantityMaxPrice !=
+                                        QUANTITY_MAX_PRICE
+                                    ? Container(
+                                        padding: EdgeInsets.zero,
+                                        width: 20.0,
+                                        height: 20.0,
+                                        child: IconButton(
+                                          alignment: Alignment.centerRight,
+                                          padding: EdgeInsets.zero,
+                                          icon: Image.asset(
+                                            'assets/images/logoInfo.png',
+                                            //fit: BoxFit.fill,
+                                            width: 20.0,
+                                            height: 20.0,
+                                          ),
+                                          iconSize: 20.0,
+                                          onPressed: () {
+                                            final List<MultiPriceListElement>
+                                                listMultiPriceListElement = [];
+                                            if (catalog.items[index]
+                                                    .quantityMaxPrice !=
+                                                QUANTITY_MAX_PRICE) {
+                                              // There is multiprice for this product
+                                              final item =
+                                                  MultiPriceListElement(
+                                                      catalog.items[index]
+                                                          .quantityMinPrice,
+                                                      catalog.items[index]
+                                                          .quantityMaxPrice,
+                                                      catalog.items[index]
+                                                          .totalAmount);
+                                              listMultiPriceListElement
+                                                  .add(item);
+                                              catalog.items[index].items
+                                                  .where((element) =>
+                                                      element.partnerId != 1)
+                                                  .forEach((element) {
+                                                final item =
+                                                    MultiPriceListElement(
+                                                        element
+                                                            .quantityMinPrice,
+                                                        element
+                                                            .quantityMaxPrice,
+                                                        element.totalAmount);
+                                                listMultiPriceListElement
+                                                    .add(item);
+                                              });
+                                            }
+                                            DisplayDialog
+                                                .displayInformationAsATable(
+                                                    context,
+                                                    'Descuentos por cantidad comprada:',
+                                                    listMultiPriceListElement);
+                                          },
+                                        ),
+                                      )
+                                    : Container()
                               ],
                             ),
                           ),
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container (
-                                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15.0, right: 15.0),
                                 width: constraints.maxWidth,
-                                child: Text (
+                                child: Text(
                                   catalog.items[index].productName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w500,
@@ -1430,12 +1499,13 @@ class _SmallScreenState extends State<_SmallScreen>{
                               )
                             ],
                           ),
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container (
-                                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                                child: Text (
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15.0, right: 15.0),
+                                child: Text(
                                   catalog.items[index].businessName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w300,
@@ -1452,14 +1522,17 @@ class _SmallScreenState extends State<_SmallScreen>{
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
+                            padding:
+                                const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
                             child: Visibility(
-                              visible : catalog.items[index].purchased == 0,
+                              visible: catalog.items[index].purchased == 0,
                               replacement: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    (catalog.items[index].purchased > 1) ? '${catalog.items[index].purchased} ${catalog.items[index].idUnit}s.' : '${catalog.items[index].purchased} ${catalog.items[index].idUnit}.',
+                                    (catalog.items[index].purchased > 1)
+                                        ? '${catalog.items[index].purchased} ${catalog.items[index].idUnit}s.'
+                                        : '${catalog.items[index].purchased} ${catalog.items[index].idUnit}.',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 24.0,
@@ -1469,20 +1542,26 @@ class _SmallScreenState extends State<_SmallScreen>{
                                     ),
                                     textAlign: TextAlign.right,
                                   ),
-                                  Row (
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         flex: 3,
                                         child: Visibility(
-                                          visible: (catalog.items[index].purchased > 1) ? true : false,
+                                          visible:
+                                              (catalog.items[index].purchased >
+                                                      1)
+                                                  ? true
+                                                  : false,
                                           replacement: TextButton(
-                                            child: Container (
+                                            child: Container(
                                               alignment: Alignment.center,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.rectangle,
-                                                borderRadius: BorderRadius.circular(18.0),
+                                                borderRadius:
+                                                    BorderRadius.circular(18.0),
                                                 color: tanteLadenAmber500,
                                               ),
                                               padding: EdgeInsets.zero,
@@ -1493,40 +1572,52 @@ class _SmallScreenState extends State<_SmallScreen>{
                                                   fit: BoxFit.fill,
                                                 ),
                                                 iconSize: 20.0,
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
                                               ),
                                             ),
                                             onPressed: () {
                                               setState(() {
-                                                cart.remove(catalog.items[index]);
-                                                catalog.remove(catalog.items[index]);
+                                                cart.remove(
+                                                    catalog.items[index]);
+                                                catalog.remove(
+                                                    catalog.items[index]);
                                               });
                                             },
                                           ),
                                           child: TextButton(
-                                            child: Container (
+                                            child: Container(
                                                 alignment: Alignment.center,
                                                 decoration: BoxDecoration(
                                                   shape: BoxShape.rectangle,
-                                                  borderRadius: BorderRadius.circular(18.0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          18.0),
                                                   color: tanteLadenAmber500,
                                                 ),
-                                                padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 2.0),
                                                 child: const Text(
                                                   '-',
                                                   style: TextStyle(
-                                                      fontFamily: 'SF Pro Display',
+                                                      fontFamily:
+                                                          'SF Pro Display',
                                                       fontSize: 24,
-                                                      fontWeight: FontWeight.w900,
-                                                      color: tanteLadenIconBrown
-                                                  ),
-                                                )
-                                            ),
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color:
+                                                          tanteLadenIconBrown),
+                                                )),
                                             onPressed: () {
                                               setState(() {
-                                                if (catalog.items[index].purchased > 1) {
-                                                  cart.remove(catalog.items[index]);
-                                                  catalog.remove(catalog.items[index]);
+                                                if (catalog.items[index]
+                                                        .purchased >
+                                                    1) {
+                                                  cart.remove(
+                                                      catalog.items[index]);
+                                                  catalog.remove(
+                                                      catalog.items[index]);
                                                 }
                                               });
                                             },
@@ -1542,18 +1633,20 @@ class _SmallScreenState extends State<_SmallScreen>{
                                       Expanded(
                                         flex: 3,
                                         child: TextButton(
-                                          child: Container (
+                                          child: Container(
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(18.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
                                               //color: colorFondo,
                                               color: tanteLadenAmber500,
                                             ),
-                                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                                            child: const Text (
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2.0),
+                                            child: const Text(
                                               '+',
-                                              style: TextStyle (
+                                              style: TextStyle(
                                                 fontFamily: 'SF Pro Display',
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w900,
@@ -1578,9 +1671,10 @@ class _SmallScreenState extends State<_SmallScreen>{
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      Text (
+                                      Text(
                                           'Unids. mín. venta: ${catalog.items[index].minQuantitySell} ${(catalog.items[index].minQuantitySell > 1) ? '${catalog.items[index].idUnit}s.' : '${catalog.items[index].idUnit}.'}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w300,
@@ -1589,11 +1683,10 @@ class _SmallScreenState extends State<_SmallScreen>{
                                             fontStyle: FontStyle.normal,
                                             color: Color(0xFF6C6D77),
                                           ),
-                                          textAlign: TextAlign.start
-                                      )
+                                          textAlign: TextAlign.start)
                                     ],
                                   ),
-                                  TextButton (
+                                  TextButton(
                                       onPressed: () {
                                         setState(() {
                                           catalog.add(catalog.getItem(index));
@@ -1603,32 +1696,32 @@ class _SmallScreenState extends State<_SmallScreen>{
                                       child: Container(
                                         alignment: Alignment.centerLeft,
                                         padding: const EdgeInsets.all(2.0),
-                                        decoration: BoxDecoration (
+                                        decoration: BoxDecoration(
                                             shape: BoxShape.rectangle,
-                                            borderRadius: BorderRadius.circular(4.0),
+                                            borderRadius:
+                                                BorderRadius.circular(4.0),
                                             color: tanteLadenBrown500,
                                             gradient: const LinearGradient(
                                               colors: <Color>[
-                                                Color (0xFF833C26),
-                                                Color (0xFF9A541F),
-                                                Color (0xFFF9B806),
-                                                Color (0XFFFFC107),
+                                                Color(0xFF833C26),
+                                                Color(0xFF9A541F),
+                                                Color(0xFFF9B806),
+                                                Color(0XFFFFC107),
                                               ],
-                                            )
-                                        ),
+                                            )),
                                         height: 40,
                                         child: Container(
                                           //padding: EdgeInsets.all(3.0),
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(4.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(4.0),
                                               //color: colorFondo,
-                                              color: tanteLadenBackgroundWhite
-                                          ),
-                                          child: const Text (
+                                              color: tanteLadenBackgroundWhite),
+                                          child: const Text(
                                             'Añadir',
-                                            style: TextStyle (
+                                            style: TextStyle(
                                               fontFamily: 'SF Pro Display',
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
@@ -1638,8 +1731,7 @@ class _SmallScreenState extends State<_SmallScreen>{
                                           ),
                                           //height: 38,
                                         ),
-                                      )
-                                  ),
+                                      )),
                                 ],
                               ),
                             ),
@@ -1649,22 +1741,22 @@ class _SmallScreenState extends State<_SmallScreen>{
                     },
                   ),
                 );
-              }
-          )
-      ),
+              })),
     );
   }
-  
 }
+
 class _MediumScreen extends StatefulWidget {
   @override
   _MediumScreenState createState() => _MediumScreenState();
 }
-class _MediumScreenState extends State<_MediumScreen>{
+
+class _MediumScreenState extends State<_MediumScreen> {
   @override
   void initState() {
     super.initState();
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -1674,39 +1766,35 @@ class _MediumScreenState extends State<_MediumScreen>{
   Widget build(BuildContext context) {
     var catalog = context.watch<Catalog>();
     var cart = context.read<Cart>();
-    return SafeArea (
-      child: Padding (
+    return SafeArea(
+      child: Padding(
           padding: const EdgeInsets.only(top: 5.0),
-          child: GridView.builder (
+          child: GridView.builder(
               itemCount: catalog.numItems,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 200.0 / 303.0
-              ),
+                  crossAxisCount: 2, childAspectRatio: 200.0 / 303.0),
               itemBuilder: (BuildContext context, int index) {
-                return Card (
+                return Card(
                   clipBehavior: Clip.antiAlias,
                   elevation: 0,
                   shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0)
-                  ),
-                  child: LayoutBuilder (
+                      borderRadius: BorderRadius.circular(0.0)),
+                  child: LayoutBuilder(
                     builder: (context, constraints) {
-                      return Column (
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              GestureDetector (
+                              GestureDetector(
                                 onTap: () {
-                                  Navigator.push (
+                                  Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => ProductView(catalog.items[index])
-                                      )
-                                  );
+                                          builder: (context) => ProductView(
+                                              catalog.items[index])));
                                 },
                                 child: Container(
                                   //padding: EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
@@ -1715,94 +1803,136 @@ class _MediumScreenState extends State<_MediumScreen>{
                                   child: AspectRatio(
                                     aspectRatio: 3.0 / 2.0,
                                     child: CachedNetworkImage(
-                                      placeholder: (context, url) => const CircularProgressIndicator(),
-                                      imageUrl: '$SERVER_IP$IMAGES_DIRECTORY${catalog.items[index].productCode}_0.gif',
+                                      placeholder: (context, url) =>
+                                          const CircularProgressIndicator(),
+                                      imageUrl:
+                                          '$SERVER_IP$IMAGES_DIRECTORY${catalog.items[index].productCode}_0.gif',
                                       fit: BoxFit.scaleDown,
-                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
                                     ),
                                   ),
                                 ),
                               )
                             ],
                           ),
-                          Container (
-                            padding: const EdgeInsets.fromLTRB (15.0, 0.0, 0.0, 0.0),
-                            child: Row (
+                          Container(
+                            padding:
+                                const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Container (
+                                Container(
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Image.asset('assets/images/00001.png'),
                                 ),
-                                Container (
+                                Container(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Text.rich (
-                                    TextSpan (
-                                        text: NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((catalog.items[index].totalAmountAccordingQuantity/MULTIPLYING_FACTOR).toString())),
-                                        style: const TextStyle (
+                                  child: Text.rich(
+                                    TextSpan(
+                                        text: NumberFormat.currency(
+                                                locale: 'es_ES',
+                                                symbol: '€',
+                                                decimalDigits: 2)
+                                            .format(double.parse((catalog
+                                                        .items[index]
+                                                        .totalAmountAccordingQuantity /
+                                                    MULTIPLYING_FACTOR)
+                                                .toString())),
+                                        style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 24.0,
                                           fontFamily: 'SF Pro Display',
                                         ),
                                         //textAlign: TextAlign.start
                                         children: <TextSpan>[
-                                          TextSpan (
-                                            text: catalog.items[index].totalAmountAccordingQuantity == catalog.items[index].totalAmount
+                                          TextSpan(
+                                            text: catalog.items[index]
+                                                        .totalAmountAccordingQuantity ==
+                                                    catalog.items[index]
+                                                        .totalAmount
                                                 ? ''
-                                                : ' (${NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((catalog.items[index].totalAmount/MULTIPLYING_FACTOR).toString()))})',
-                                            style: const TextStyle (
+                                                : ' (${NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 2).format(double.parse((catalog.items[index].totalAmount / MULTIPLYING_FACTOR).toString()))})',
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 11.0,
                                               fontFamily: 'SF Pro Display',
                                               color: Color(0xFF6C6D77),
                                             ),
                                           )
-                                        ]
-                                    ),
+                                        ]),
                                     textAlign: TextAlign.start,
                                   ),
                                 ),
-                                catalog.items[index].quantityMaxPrice != QUANTITY_MAX_PRICE ? Container (
-                                  padding: EdgeInsets.zero,
-                                  width: 20.0,
-                                  height: 20.0,
-                                  child: IconButton (
-                                    alignment: Alignment.centerRight,
-                                    padding: EdgeInsets.zero,
-                                    icon: Image.asset (
-                                      'assets/images/logoInfo.png',
-                                      //fit: BoxFit.fill,
-                                      width: 20.0,
-                                      height: 20.0,
-                                    ),
-                                    iconSize: 20.0,
-                                    onPressed: () {
-                                      final List<MultiPriceListElement> listMultiPriceListElement = [];
-                                      if (catalog.items[index].quantityMaxPrice != QUANTITY_MAX_PRICE) {
-                                        // There is multiprice for this product
-                                        final item = MultiPriceListElement(catalog.items[index].quantityMinPrice, catalog.items[index].quantityMaxPrice, catalog.items[index].totalAmount);
-                                        listMultiPriceListElement.add(item);
-                                        catalog.items[index].items.where((element) => element.partnerId != 1)
-                                            .forEach((element) {
-                                          final item = MultiPriceListElement(element.quantityMinPrice, element.quantityMaxPrice, element.totalAmount);
-                                          listMultiPriceListElement.add(item);
-                                        });
-                                      }
-                                      DisplayDialog.displayInformationAsATable (context, 'Descuentos por cantidad comprada:', listMultiPriceListElement);
-                                    },
-                                  ),
-                                ) : Container()
+                                catalog.items[index].quantityMaxPrice !=
+                                        QUANTITY_MAX_PRICE
+                                    ? Container(
+                                        padding: EdgeInsets.zero,
+                                        width: 20.0,
+                                        height: 20.0,
+                                        child: IconButton(
+                                          alignment: Alignment.centerRight,
+                                          padding: EdgeInsets.zero,
+                                          icon: Image.asset(
+                                            'assets/images/logoInfo.png',
+                                            //fit: BoxFit.fill,
+                                            width: 20.0,
+                                            height: 20.0,
+                                          ),
+                                          iconSize: 20.0,
+                                          onPressed: () {
+                                            final List<MultiPriceListElement>
+                                                listMultiPriceListElement = [];
+                                            if (catalog.items[index]
+                                                    .quantityMaxPrice !=
+                                                QUANTITY_MAX_PRICE) {
+                                              // There is multiprice for this product
+                                              final item =
+                                                  MultiPriceListElement(
+                                                      catalog.items[index]
+                                                          .quantityMinPrice,
+                                                      catalog.items[index]
+                                                          .quantityMaxPrice,
+                                                      catalog.items[index]
+                                                          .totalAmount);
+                                              listMultiPriceListElement
+                                                  .add(item);
+                                              catalog.items[index].items
+                                                  .where((element) =>
+                                                      element.partnerId != 1)
+                                                  .forEach((element) {
+                                                final item =
+                                                    MultiPriceListElement(
+                                                        element
+                                                            .quantityMinPrice,
+                                                        element
+                                                            .quantityMaxPrice,
+                                                        element.totalAmount);
+                                                listMultiPriceListElement
+                                                    .add(item);
+                                              });
+                                            }
+                                            DisplayDialog
+                                                .displayInformationAsATable(
+                                                    context,
+                                                    'Descuentos por cantidad comprada:',
+                                                    listMultiPriceListElement);
+                                          },
+                                        ),
+                                      )
+                                    : Container()
                               ],
                             ),
                           ),
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container (
-                                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15.0, right: 15.0),
                                 width: constraints.maxWidth,
-                                child: Text (
+                                child: Text(
                                   catalog.items[index].productName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w500,
@@ -1819,12 +1949,13 @@ class _MediumScreenState extends State<_MediumScreen>{
                               )
                             ],
                           ),
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container (
-                                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                                child: Text (
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15.0, right: 15.0),
+                                child: Text(
                                   catalog.items[index].businessName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w300,
@@ -1841,14 +1972,17 @@ class _MediumScreenState extends State<_MediumScreen>{
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
+                            padding:
+                                const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
                             child: Visibility(
-                              visible : catalog.items[index].purchased == 0,
+                              visible: catalog.items[index].purchased == 0,
                               replacement: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    (catalog.items[index].purchased > 1) ? '${catalog.items[index].purchased} ${catalog.items[index].idUnit}s.' : '${catalog.items[index].purchased} ${catalog.items[index].idUnit}.',
+                                    (catalog.items[index].purchased > 1)
+                                        ? '${catalog.items[index].purchased} ${catalog.items[index].idUnit}s.'
+                                        : '${catalog.items[index].purchased} ${catalog.items[index].idUnit}.',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 24.0,
@@ -1858,20 +1992,26 @@ class _MediumScreenState extends State<_MediumScreen>{
                                     ),
                                     textAlign: TextAlign.right,
                                   ),
-                                  Row (
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         flex: 3,
                                         child: Visibility(
-                                          visible: (catalog.items[index].purchased > 1) ? true : false,
+                                          visible:
+                                              (catalog.items[index].purchased >
+                                                      1)
+                                                  ? true
+                                                  : false,
                                           replacement: TextButton(
-                                            child: Container (
+                                            child: Container(
                                               alignment: Alignment.center,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.rectangle,
-                                                borderRadius: BorderRadius.circular(18.0),
+                                                borderRadius:
+                                                    BorderRadius.circular(18.0),
                                                 color: tanteLadenAmber500,
                                               ),
                                               padding: EdgeInsets.zero,
@@ -1882,40 +2022,52 @@ class _MediumScreenState extends State<_MediumScreen>{
                                                   fit: BoxFit.fill,
                                                 ),
                                                 iconSize: 20.0,
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
                                               ),
                                             ),
                                             onPressed: () {
                                               setState(() {
-                                                cart.remove(catalog.items[index]);
-                                                catalog.remove(catalog.items[index]);
+                                                cart.remove(
+                                                    catalog.items[index]);
+                                                catalog.remove(
+                                                    catalog.items[index]);
                                               });
                                             },
                                           ),
                                           child: TextButton(
-                                            child: Container (
+                                            child: Container(
                                                 alignment: Alignment.center,
                                                 decoration: BoxDecoration(
                                                   shape: BoxShape.rectangle,
-                                                  borderRadius: BorderRadius.circular(18.0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          18.0),
                                                   color: tanteLadenAmber500,
                                                 ),
-                                                padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 2.0),
                                                 child: const Text(
                                                   '-',
                                                   style: TextStyle(
-                                                      fontFamily: 'SF Pro Display',
+                                                      fontFamily:
+                                                          'SF Pro Display',
                                                       fontSize: 24,
-                                                      fontWeight: FontWeight.w900,
-                                                      color: tanteLadenIconBrown
-                                                  ),
-                                                )
-                                            ),
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color:
+                                                          tanteLadenIconBrown),
+                                                )),
                                             onPressed: () {
                                               setState(() {
-                                                if (catalog.items[index].purchased > 1) {
-                                                  cart.remove(catalog.items[index]);
-                                                  catalog.remove(catalog.items[index]);
+                                                if (catalog.items[index]
+                                                        .purchased >
+                                                    1) {
+                                                  cart.remove(
+                                                      catalog.items[index]);
+                                                  catalog.remove(
+                                                      catalog.items[index]);
                                                 }
                                               });
                                             },
@@ -1931,18 +2083,20 @@ class _MediumScreenState extends State<_MediumScreen>{
                                       Expanded(
                                         flex: 3,
                                         child: TextButton(
-                                          child: Container (
+                                          child: Container(
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(18.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
                                               //color: colorFondo,
                                               color: tanteLadenAmber500,
                                             ),
-                                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                                            child: const Text (
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2.0),
+                                            child: const Text(
                                               '+',
-                                              style: TextStyle (
+                                              style: TextStyle(
                                                 fontFamily: 'SF Pro Display',
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w900,
@@ -1967,9 +2121,10 @@ class _MediumScreenState extends State<_MediumScreen>{
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      Text (
+                                      Text(
                                           'Unids. mín. venta: ${catalog.items[index].minQuantitySell} ${(catalog.items[index].minQuantitySell > 1) ? '${catalog.items[index].idUnit}s.' : '${catalog.items[index].idUnit}.'}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w300,
@@ -1978,11 +2133,10 @@ class _MediumScreenState extends State<_MediumScreen>{
                                             fontStyle: FontStyle.normal,
                                             color: Color(0xFF6C6D77),
                                           ),
-                                          textAlign: TextAlign.start
-                                      )
+                                          textAlign: TextAlign.start)
                                     ],
                                   ),
-                                  TextButton (
+                                  TextButton(
                                       onPressed: () {
                                         setState(() {
                                           catalog.add(catalog.getItem(index));
@@ -1992,32 +2146,32 @@ class _MediumScreenState extends State<_MediumScreen>{
                                       child: Container(
                                         alignment: Alignment.centerLeft,
                                         padding: const EdgeInsets.all(2.0),
-                                        decoration: BoxDecoration (
+                                        decoration: BoxDecoration(
                                             shape: BoxShape.rectangle,
-                                            borderRadius: BorderRadius.circular(4.0),
+                                            borderRadius:
+                                                BorderRadius.circular(4.0),
                                             color: tanteLadenBrown500,
                                             gradient: const LinearGradient(
                                               colors: <Color>[
-                                                Color (0xFF833C26),
-                                                Color (0xFF9A541F),
-                                                Color (0xFFF9B806),
-                                                Color (0XFFFFC107),
+                                                Color(0xFF833C26),
+                                                Color(0xFF9A541F),
+                                                Color(0xFFF9B806),
+                                                Color(0XFFFFC107),
                                               ],
-                                            )
-                                        ),
+                                            )),
                                         height: 40,
                                         child: Container(
                                           //padding: EdgeInsets.all(3.0),
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(4.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(4.0),
                                               //color: colorFondo,
-                                              color: tanteLadenBackgroundWhite
-                                          ),
-                                          child: const Text (
+                                              color: tanteLadenBackgroundWhite),
+                                          child: const Text(
                                             'Añadir',
-                                            style: TextStyle (
+                                            style: TextStyle(
                                               fontFamily: 'SF Pro Display',
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
@@ -2027,8 +2181,7 @@ class _MediumScreenState extends State<_MediumScreen>{
                                           ),
                                           //height: 38,
                                         ),
-                                      )
-                                  ),
+                                      )),
                                 ],
                               ),
                             ),
@@ -2038,22 +2191,22 @@ class _MediumScreenState extends State<_MediumScreen>{
                     },
                   ),
                 );
-              }
-          )
-      ),
+              })),
     );
   }
-
 }
+
 class _LargeScreen extends StatefulWidget {
   @override
   _LargeScreenState createState() => _LargeScreenState();
 }
-class _LargeScreenState extends State<_LargeScreen>{
+
+class _LargeScreenState extends State<_LargeScreen> {
   @override
   void initState() {
     super.initState();
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -2063,39 +2216,35 @@ class _LargeScreenState extends State<_LargeScreen>{
   Widget build(BuildContext context) {
     var catalog = context.watch<Catalog>();
     var cart = context.read<Cart>();
-    return SafeArea (
-      child: Padding (
+    return SafeArea(
+      child: Padding(
           padding: const EdgeInsets.only(top: 5.0),
-          child: GridView.builder (
+          child: GridView.builder(
               itemCount: catalog.numItems,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 200.0 / 303.0
-              ),
+                  crossAxisCount: 2, childAspectRatio: 200.0 / 303.0),
               itemBuilder: (BuildContext context, int index) {
-                return Card (
+                return Card(
                   clipBehavior: Clip.antiAlias,
                   elevation: 0,
                   shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.circular(0.0)
-                  ),
-                  child: LayoutBuilder (
+                      borderRadius: BorderRadius.circular(0.0)),
+                  child: LayoutBuilder(
                     builder: (context, constraints) {
-                      return Column (
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              GestureDetector (
+                              GestureDetector(
                                 onTap: () {
-                                  Navigator.push (
+                                  Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => ProductView(catalog.items[index])
-                                      )
-                                  );
+                                          builder: (context) => ProductView(
+                                              catalog.items[index])));
                                 },
                                 child: Container(
                                   //padding: EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
@@ -2104,94 +2253,136 @@ class _LargeScreenState extends State<_LargeScreen>{
                                   child: AspectRatio(
                                     aspectRatio: 3.0 / 2.0,
                                     child: CachedNetworkImage(
-                                      placeholder: (context, url) => const CircularProgressIndicator(),
-                                      imageUrl: '$SERVER_IP$IMAGES_DIRECTORY${catalog.items[index].productCode}_0.gif',
+                                      placeholder: (context, url) =>
+                                          const CircularProgressIndicator(),
+                                      imageUrl:
+                                          '$SERVER_IP$IMAGES_DIRECTORY${catalog.items[index].productCode}_0.gif',
                                       fit: BoxFit.scaleDown,
-                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
                                     ),
                                   ),
                                 ),
                               )
                             ],
                           ),
-                          Container (
-                            padding: const EdgeInsets.fromLTRB (15.0, 0.0, 0.0, 0.0),
-                            child: Row (
+                          Container(
+                            padding:
+                                const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Container (
+                                Container(
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Image.asset('assets/images/00001.png'),
                                 ),
-                                Container (
+                                Container(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Text.rich (
-                                    TextSpan (
-                                        text: NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((catalog.items[index].totalAmountAccordingQuantity/MULTIPLYING_FACTOR).toString())),
-                                        style: const TextStyle (
+                                  child: Text.rich(
+                                    TextSpan(
+                                        text: NumberFormat.currency(
+                                                locale: 'es_ES',
+                                                symbol: '€',
+                                                decimalDigits: 2)
+                                            .format(double.parse((catalog
+                                                        .items[index]
+                                                        .totalAmountAccordingQuantity /
+                                                    MULTIPLYING_FACTOR)
+                                                .toString())),
+                                        style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 24.0,
                                           fontFamily: 'SF Pro Display',
                                         ),
                                         //textAlign: TextAlign.start
                                         children: <TextSpan>[
-                                          TextSpan (
-                                            text: catalog.items[index].totalAmountAccordingQuantity == catalog.items[index].totalAmount
+                                          TextSpan(
+                                            text: catalog.items[index]
+                                                        .totalAmountAccordingQuantity ==
+                                                    catalog.items[index]
+                                                        .totalAmount
                                                 ? ''
-                                                : ' (${NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((catalog.items[index].totalAmount/MULTIPLYING_FACTOR).toString()))})',
-                                            style: const TextStyle (
+                                                : ' (${NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 2).format(double.parse((catalog.items[index].totalAmount / MULTIPLYING_FACTOR).toString()))})',
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.w300,
                                               fontSize: 11.0,
                                               fontFamily: 'SF Pro Display',
                                               color: Color(0xFF6C6D77),
                                             ),
                                           )
-                                        ]
-                                    ),
+                                        ]),
                                     textAlign: TextAlign.start,
                                   ),
                                 ),
-                                catalog.items[index].quantityMaxPrice != QUANTITY_MAX_PRICE ? Container (
-                                  padding: EdgeInsets.zero,
-                                  width: 20.0,
-                                  height: 20.0,
-                                  child: IconButton (
-                                    alignment: Alignment.centerRight,
-                                    padding: EdgeInsets.zero,
-                                    icon: Image.asset (
-                                      'assets/images/logoInfo.png',
-                                      //fit: BoxFit.fill,
-                                      width: 20.0,
-                                      height: 20.0,
-                                    ),
-                                    iconSize: 20.0,
-                                    onPressed: () {
-                                      final List<MultiPriceListElement> listMultiPriceListElement = [];
-                                      if (catalog.items[index].quantityMaxPrice != QUANTITY_MAX_PRICE) {
-                                        // There is multiprice for this product
-                                        final item = MultiPriceListElement(catalog.items[index].quantityMinPrice, catalog.items[index].quantityMaxPrice, catalog.items[index].totalAmount);
-                                        listMultiPriceListElement.add(item);
-                                        catalog.items[index].items.where((element) => element.partnerId != 1)
-                                            .forEach((element) {
-                                          final item = MultiPriceListElement(element.quantityMinPrice, element.quantityMaxPrice, element.totalAmount);
-                                          listMultiPriceListElement.add(item);
-                                        });
-                                      }
-                                      DisplayDialog.displayInformationAsATable (context, 'Descuentos por cantidad comprada:', listMultiPriceListElement);
-                                    },
-                                  ),
-                                ) : Container()
+                                catalog.items[index].quantityMaxPrice !=
+                                        QUANTITY_MAX_PRICE
+                                    ? Container(
+                                        padding: EdgeInsets.zero,
+                                        width: 20.0,
+                                        height: 20.0,
+                                        child: IconButton(
+                                          alignment: Alignment.centerRight,
+                                          padding: EdgeInsets.zero,
+                                          icon: Image.asset(
+                                            'assets/images/logoInfo.png',
+                                            //fit: BoxFit.fill,
+                                            width: 20.0,
+                                            height: 20.0,
+                                          ),
+                                          iconSize: 20.0,
+                                          onPressed: () {
+                                            final List<MultiPriceListElement>
+                                                listMultiPriceListElement = [];
+                                            if (catalog.items[index]
+                                                    .quantityMaxPrice !=
+                                                QUANTITY_MAX_PRICE) {
+                                              // There is multiprice for this product
+                                              final item =
+                                                  MultiPriceListElement(
+                                                      catalog.items[index]
+                                                          .quantityMinPrice,
+                                                      catalog.items[index]
+                                                          .quantityMaxPrice,
+                                                      catalog.items[index]
+                                                          .totalAmount);
+                                              listMultiPriceListElement
+                                                  .add(item);
+                                              catalog.items[index].items
+                                                  .where((element) =>
+                                                      element.partnerId != 1)
+                                                  .forEach((element) {
+                                                final item =
+                                                    MultiPriceListElement(
+                                                        element
+                                                            .quantityMinPrice,
+                                                        element
+                                                            .quantityMaxPrice,
+                                                        element.totalAmount);
+                                                listMultiPriceListElement
+                                                    .add(item);
+                                              });
+                                            }
+                                            DisplayDialog
+                                                .displayInformationAsATable(
+                                                    context,
+                                                    'Descuentos por cantidad comprada:',
+                                                    listMultiPriceListElement);
+                                          },
+                                        ),
+                                      )
+                                    : Container()
                               ],
                             ),
                           ),
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container (
-                                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15.0, right: 15.0),
                                 width: constraints.maxWidth,
-                                child: Text (
+                                child: Text(
                                   catalog.items[index].productName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w500,
@@ -2208,12 +2399,13 @@ class _LargeScreenState extends State<_LargeScreen>{
                               )
                             ],
                           ),
-                          Row (
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container (
-                                padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                                child: Text (
+                              Container(
+                                padding: const EdgeInsets.only(
+                                    left: 15.0, right: 15.0),
+                                child: Text(
                                   catalog.items[index].businessName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w300,
@@ -2230,14 +2422,17 @@ class _LargeScreenState extends State<_LargeScreen>{
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
+                            padding:
+                                const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
                             child: Visibility(
-                              visible : catalog.items[index].purchased == 0,
+                              visible: catalog.items[index].purchased == 0,
                               replacement: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    (catalog.items[index].purchased > 1) ? '${catalog.items[index].purchased} ${catalog.items[index].idUnit}s.' : '${catalog.items[index].purchased} ${catalog.items[index].idUnit}.',
+                                    (catalog.items[index].purchased > 1)
+                                        ? '${catalog.items[index].purchased} ${catalog.items[index].idUnit}s.'
+                                        : '${catalog.items[index].purchased} ${catalog.items[index].idUnit}.',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 24.0,
@@ -2247,20 +2442,26 @@ class _LargeScreenState extends State<_LargeScreen>{
                                     ),
                                     textAlign: TextAlign.right,
                                   ),
-                                  Row (
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         flex: 3,
                                         child: Visibility(
-                                          visible: (catalog.items[index].purchased > 1) ? true : false,
+                                          visible:
+                                              (catalog.items[index].purchased >
+                                                      1)
+                                                  ? true
+                                                  : false,
                                           replacement: TextButton(
-                                            child: Container (
+                                            child: Container(
                                               alignment: Alignment.center,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.rectangle,
-                                                borderRadius: BorderRadius.circular(18.0),
+                                                borderRadius:
+                                                    BorderRadius.circular(18.0),
                                                 color: tanteLadenAmber500,
                                               ),
                                               padding: EdgeInsets.zero,
@@ -2271,40 +2472,52 @@ class _LargeScreenState extends State<_LargeScreen>{
                                                   fit: BoxFit.fill,
                                                 ),
                                                 iconSize: 20.0,
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
                                               ),
                                             ),
                                             onPressed: () {
                                               setState(() {
-                                                cart.remove(catalog.items[index]);
-                                                catalog.remove(catalog.items[index]);
+                                                cart.remove(
+                                                    catalog.items[index]);
+                                                catalog.remove(
+                                                    catalog.items[index]);
                                               });
                                             },
                                           ),
                                           child: TextButton(
-                                            child: Container (
+                                            child: Container(
                                                 alignment: Alignment.center,
                                                 decoration: BoxDecoration(
                                                   shape: BoxShape.rectangle,
-                                                  borderRadius: BorderRadius.circular(18.0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          18.0),
                                                   color: tanteLadenAmber500,
                                                 ),
-                                                padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 2.0),
                                                 child: const Text(
                                                   '-',
                                                   style: TextStyle(
-                                                      fontFamily: 'SF Pro Display',
+                                                      fontFamily:
+                                                          'SF Pro Display',
                                                       fontSize: 24,
-                                                      fontWeight: FontWeight.w900,
-                                                      color: tanteLadenIconBrown
-                                                  ),
-                                                )
-                                            ),
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color:
+                                                          tanteLadenIconBrown),
+                                                )),
                                             onPressed: () {
                                               setState(() {
-                                                if (catalog.items[index].purchased > 1) {
-                                                  cart.remove(catalog.items[index]);
-                                                  catalog.remove(catalog.items[index]);
+                                                if (catalog.items[index]
+                                                        .purchased >
+                                                    1) {
+                                                  cart.remove(
+                                                      catalog.items[index]);
+                                                  catalog.remove(
+                                                      catalog.items[index]);
                                                 }
                                               });
                                             },
@@ -2320,18 +2533,20 @@ class _LargeScreenState extends State<_LargeScreen>{
                                       Expanded(
                                         flex: 3,
                                         child: TextButton(
-                                          child: Container (
+                                          child: Container(
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(18.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
                                               //color: colorFondo,
                                               color: tanteLadenAmber500,
                                             ),
-                                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                                            child: const Text (
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2.0),
+                                            child: const Text(
                                               '+',
-                                              style: TextStyle (
+                                              style: TextStyle(
                                                 fontFamily: 'SF Pro Display',
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w900,
@@ -2356,9 +2571,10 @@ class _LargeScreenState extends State<_LargeScreen>{
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      Text (
+                                      Text(
                                           'Unids. mín. venta: ${catalog.items[index].minQuantitySell} ${(catalog.items[index].minQuantitySell > 1) ? '${catalog.items[index].idUnit}s.' : '${catalog.items[index].idUnit}.'}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w300,
@@ -2367,11 +2583,10 @@ class _LargeScreenState extends State<_LargeScreen>{
                                             fontStyle: FontStyle.normal,
                                             color: Color(0xFF6C6D77),
                                           ),
-                                          textAlign: TextAlign.start
-                                      )
+                                          textAlign: TextAlign.start)
                                     ],
                                   ),
-                                  TextButton (
+                                  TextButton(
                                       onPressed: () {
                                         setState(() {
                                           catalog.add(catalog.getItem(index));
@@ -2381,32 +2596,32 @@ class _LargeScreenState extends State<_LargeScreen>{
                                       child: Container(
                                         alignment: Alignment.centerLeft,
                                         padding: const EdgeInsets.all(2.0),
-                                        decoration: BoxDecoration (
+                                        decoration: BoxDecoration(
                                             shape: BoxShape.rectangle,
-                                            borderRadius: BorderRadius.circular(4.0),
+                                            borderRadius:
+                                                BorderRadius.circular(4.0),
                                             color: tanteLadenBrown500,
                                             gradient: const LinearGradient(
                                               colors: <Color>[
-                                                Color (0xFF833C26),
-                                                Color (0xFF9A541F),
-                                                Color (0xFFF9B806),
-                                                Color (0XFFFFC107),
+                                                Color(0xFF833C26),
+                                                Color(0xFF9A541F),
+                                                Color(0xFFF9B806),
+                                                Color(0XFFFFC107),
                                               ],
-                                            )
-                                        ),
+                                            )),
                                         height: 40,
                                         child: Container(
                                           //padding: EdgeInsets.all(3.0),
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
                                               shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(4.0),
+                                              borderRadius:
+                                                  BorderRadius.circular(4.0),
                                               //color: colorFondo,
-                                              color: tanteLadenBackgroundWhite
-                                          ),
-                                          child: const Text (
+                                              color: tanteLadenBackgroundWhite),
+                                          child: const Text(
                                             'Añadir',
-                                            style: TextStyle (
+                                            style: TextStyle(
                                               fontFamily: 'SF Pro Display',
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
@@ -2416,8 +2631,7 @@ class _LargeScreenState extends State<_LargeScreen>{
                                           ),
                                           //height: 38,
                                         ),
-                                      )
-                                  ),
+                                      )),
                                 ],
                               ),
                             ),
@@ -2427,10 +2641,7 @@ class _LargeScreenState extends State<_LargeScreen>{
                     },
                   ),
                 );
-              }
-          )
-      ),
+              })),
     );
   }
-
 }
