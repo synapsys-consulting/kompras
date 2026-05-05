@@ -33,7 +33,7 @@ class ProductAvail {
     required this.rn
   });
   final int productId;
-  final int productCode;
+  final String productCode;
   final String productName;
   final String productNameLong;
   final String productDescription;
@@ -80,7 +80,7 @@ class ProductAvail {
     //debugPrint('El taxAmount es: ' + json['TAX_AMOUNT'].toString());
     return ProductAvail (
       productId: int.parse(json['PRODUCT_ID'].toString()),
-      productCode: int.parse(json['PRODUCT_CODE'].toString()),
+      productCode: json['PRODUCT_CODE']?.toString() ?? '',
       productName: json['PRODUCT_NAME'] ?? '',
       productNameLong: json['PRODUCT_NAME_LONG'] ?? '',
       productDescription: json['PRODUCT_DESCRIPTION'] ?? 'NULL',

@@ -15,11 +15,12 @@ import 'package:provider/provider.dart';
 class LookingForProducts extends StatefulWidget {
   const LookingForProducts({super.key});
 
-@override
+  @override
   _LookingForProductsState createState() {
     return _LookingForProductsState();
   }
 }
+
 class _LookingForProductsState extends State<LookingForProducts> {
   final TextEditingController _searchController = TextEditingController();
   List<MultiPricesProductAvail> _productList = [];
@@ -28,8 +29,9 @@ class _LookingForProductsState extends State<LookingForProducts> {
   @override
   void initState() {
     super.initState();
-    _searchController.addListener (_onSearchChanged);
+    _searchController.addListener(_onSearchChanged);
   }
+
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
@@ -37,6 +39,7 @@ class _LookingForProductsState extends State<LookingForProducts> {
     _productList.clear();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,9 +50,9 @@ class _LookingForProductsState extends State<LookingForProducts> {
           backgroundColor: tanteLadenBackgroundWhite,
           title: _AccentColorOverride(
             color: tanteLadenOnPrimary,
-            child: TextField (
+            child: TextField(
               controller: _searchController,
-              decoration: InputDecoration (
+              decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.youtube_searched_for_outlined),
                   labelText: 'Buscar producto',
                   //helperText: 'Teclea el nombre de la calle que quieres buscar',
@@ -60,409 +63,512 @@ class _LookingForProductsState extends State<LookingForProducts> {
                           _searchController.clear();
                           _productList.clear();
                         });
-                      }
-                  )
-              ),
+                      })),
             ),
           ),
         ),
-        body: buildBody(context)
-    );
+        body: buildBody(context));
   }
-  Widget buildBody (BuildContext context) {
+
+  Widget buildBody(BuildContext context) {
     var catalog = context.read<Catalog>();
     var cart = context.read<Cart>();
-    return LayoutBuilder(
-        builder: (context, constraints) {
-          return SafeArea(
-              child: Padding (
-                  padding: const EdgeInsets.only(top: 5.0),
-                  child: GridView.builder (
-                      itemCount: _productList.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: (constraints.maxWidth > 1200) ? 3 : 2,
-                          childAspectRatio: (constraints.maxWidth > 1200) ? 200.0 / 281.0 : 200.0 / 303.0
-                      ),
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card (
-                          clipBehavior: Clip.antiAlias,
-                          elevation: 0,
-                          shape: ContinuousRectangleBorder(
-                              borderRadius: BorderRadius.circular(0.0)
-                          ),
-                          child: LayoutBuilder (
-                            builder: (context, constraints) {
-                              return Column(
+    return LayoutBuilder(builder: (context, constraints) {
+      return SafeArea(
+          child: Padding(
+              padding: const EdgeInsets.only(top: 5.0),
+              child: GridView.builder(
+                  itemCount: _productList.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: (constraints.maxWidth > 1200) ? 3 : 2,
+                      childAspectRatio: (constraints.maxWidth > 1200)
+                          ? 200.0 / 281.0
+                          : 200.0 / 303.0),
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      clipBehavior: Clip.antiAlias,
+                      elevation: 0,
+                      shape: ContinuousRectangleBorder(
+                          borderRadius: BorderRadius.circular(0.0)),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        //padding: EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
-                                        alignment: Alignment.center,
-                                        width: constraints.maxWidth,
-                                        child: AspectRatio(
-                                          aspectRatio: 3.0 / 2.0,
-                                          child: CachedNetworkImage(
-                                            placeholder: (context, url) => const CircularProgressIndicator(),
-                                            imageUrl: '$SERVER_IP$IMAGES_DIRECTORY${_productList[index].productCode}_0.gif',
-                                            fit: BoxFit.scaleDown,
-                                            errorWidget: (context, url, error) => const Icon(Icons.error),
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
                                   Container(
-                                    padding: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.only(right: 8.0),
-                                          child: Image.asset('assets/images/00001.png'),
-                                        ),
-                                        Container (
-                                          padding: const EdgeInsets.only(right: 8.0),
-                                          child: Text.rich (
-                                            TextSpan (
-                                                text: NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((_productList[index].totalAmountAccordingQuantity/MULTIPLYING_FACTOR).toString())),
-                                                style: const TextStyle (
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 24.0,
-                                                  fontFamily: 'SF Pro Display',
-                                                ),
-                                                //textAlign: TextAlign.start
-                                                children: <TextSpan>[
-                                                  TextSpan (
-                                                    text: _productList[index].totalAmountAccordingQuantity == _productList[index].totalAmount
-                                                        ? ''
-                                                        : ' (${NumberFormat.currency (locale:'es_ES', symbol: '€', decimalDigits:2).format(double.parse((_productList[index].totalAmount/MULTIPLYING_FACTOR).toString()))})',
-                                                    style: const TextStyle (
-                                                      fontWeight: FontWeight.w300,
-                                                      fontSize: 11.0,
-                                                      fontFamily: 'SF Pro Display',
-                                                      color: Color(0xFF6C6D77),
-                                                    ),
-                                                  )
-                                                ]
-                                            ),
-                                            textAlign: TextAlign.start,
-                                          ),
-                                        ),
-                                        _productList[index].quantityMaxPrice != QUANTITY_MAX_PRICE ? Container (
-                                          padding: EdgeInsets.zero,
-                                          width: 20.0,
-                                          height: 20.0,
-                                          child: IconButton (
-                                            alignment: Alignment.centerRight,
-                                            padding: EdgeInsets.zero,
-                                            icon: Image.asset (
-                                              'assets/images/logoInfo.png',
-                                              //fit: BoxFit.fill,
-                                              width: 20.0,
-                                              height: 20.0,
-                                            ),
-                                            iconSize: 20.0,
-                                            onPressed: () {
-                                              final List<MultiPriceListElement> listMultiPriceListElement = [];
-                                              if (_productList[index].quantityMaxPrice != QUANTITY_MAX_PRICE) {
-                                                // There is multiprice for this product
-                                                final item = MultiPriceListElement(_productList[index].quantityMinPrice, _productList[index].quantityMaxPrice, _productList[index].totalAmount);
-                                                listMultiPriceListElement.add(item);
-                                                _productList[index].items.where((element) => element.partnerId != 1)
-                                                    .forEach((element) {
-                                                  final item = MultiPriceListElement(element.quantityMinPrice, element.quantityMaxPrice, element.totalAmount);
-                                                  listMultiPriceListElement.add(item);
-                                                });
-                                              }
-                                              DisplayDialog.displayInformationAsATable (context, 'Descuentos por cantidad comprada:', listMultiPriceListElement);
-                                            },
-                                          ),
-                                        ) : Container()
-                                      ],
+                                    //padding: EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
+                                    alignment: Alignment.center,
+                                    width: constraints.maxWidth,
+                                    child: AspectRatio(
+                                      aspectRatio: 3.0 / 2.0,
+                                      child: CachedNetworkImage(
+                                        placeholder: (context, url) =>
+                                            const CircularProgressIndicator(),
+                                        imageUrl:
+                                            '$SERVER_IP$IMAGES_DIRECTORY${_productList[index].productCode}_0.gif',
+                                        fit: BoxFit.scaleDown,
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error),
+                                      ),
                                     ),
-                                  ),
-                                  Row (
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Container (
-                                        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                                        width: constraints.maxWidth,
-                                        child: Text(
-                                          _productList[index].productName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14.0,
-                                            fontFamily: 'SF Pro Display',
-                                            fontStyle: FontStyle.normal,
-                                            color: Colors.black,
-                                          ),
-                                          textAlign: TextAlign.start,
-                                          overflow: TextOverflow.fade,
-                                          maxLines: 1,
-                                          softWrap: false,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  Row (
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Container (
-                                        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                                        child: Text (
-                                          _productList[index].businessName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w300,
-                                            fontSize: 12.0,
-                                            fontFamily: 'SF Pro Display',
-                                            fontStyle: FontStyle.normal,
-                                            color: Color(0xFF6C6D77),
-                                          ),
-                                          textAlign: TextAlign.start,
-                                          overflow: TextOverflow.ellipsis,
-                                          softWrap: false,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
-                                    child: Visibility(
-                                      visible : _productList[index].purchased == 0,
-                                      replacement: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            (_productList[index].purchased > 1) ? '${_productList[index].purchased} ${_productList[index].idUnit}s.' : '${_productList[index].purchased} ${_productList[index].idUnit}.',
+                                  )
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.fromLTRB(
+                                    15.0, 0.0, 0.0, 0.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: Image.asset(
+                                          'assets/images/00001.png'),
+                                    ),
+                                    Container(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: Text.rich(
+                                        TextSpan(
+                                            text: NumberFormat.currency(
+                                                    locale: 'es_ES',
+                                                    symbol: '€',
+                                                    decimalDigits: 2)
+                                                .format(double.parse((_productList[
+                                                                index]
+                                                            .totalAmountAccordingQuantity /
+                                                        MULTIPLYING_FACTOR)
+                                                    .toString())),
                                             style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight: FontWeight.w500,
                                               fontSize: 24.0,
                                               fontFamily: 'SF Pro Display',
-                                              fontStyle: FontStyle.normal,
-                                              color: tanteLadenIconBrown,
                                             ),
-                                            textAlign: TextAlign.right,
-                                          ),
-                                          Row (
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                flex: 3,
-                                                child: Visibility(
-                                                  visible: (_productList[index].purchased > 1) ? true : false,
-                                                  replacement: TextButton(
-                                                    child: Container (
-                                                      alignment: Alignment.center,
-                                                      decoration: BoxDecoration(
-                                                        shape: BoxShape.rectangle,
-                                                        borderRadius: BorderRadius.circular(18.0),
-                                                        color: tanteLadenAmber500,
-                                                      ),
-                                                      padding: EdgeInsets.zero,
-                                                      child: IconButton(
-                                                        onPressed: null,
-                                                        icon: Image.asset(
-                                                          'assets/images/logoDeleteKlein.png',
-                                                          fit: BoxFit.fill,
-                                                        ),
-                                                        iconSize: 20.0,
-                                                        padding: const EdgeInsets.all(8.0),
-                                                      ),
-                                                    ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        cart.remove(catalog.items[index]);
-                                                        catalog.remove(catalog.items[index]);
-                                                      });
-                                                    },
+                                            //textAlign: TextAlign.start
+                                            children: <TextSpan>[
+                                              TextSpan(
+                                                text: _productList[index]
+                                                            .totalAmountAccordingQuantity ==
+                                                        _productList[index]
+                                                            .totalAmount
+                                                    ? ''
+                                                    : ' (${NumberFormat.currency(locale: 'es_ES', symbol: '€', decimalDigits: 2).format(double.parse((_productList[index].totalAmount / MULTIPLYING_FACTOR).toString()))})',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w300,
+                                                  fontSize: 11.0,
+                                                  fontFamily: 'SF Pro Display',
+                                                  color: Color(0xFF6C6D77),
+                                                ),
+                                              )
+                                            ]),
+                                        textAlign: TextAlign.start,
+                                      ),
+                                    ),
+                                    _productList[index].quantityMaxPrice !=
+                                            QUANTITY_MAX_PRICE
+                                        ? Container(
+                                            padding: EdgeInsets.zero,
+                                            width: 20.0,
+                                            height: 20.0,
+                                            child: IconButton(
+                                              alignment: Alignment.centerRight,
+                                              padding: EdgeInsets.zero,
+                                              icon: Image.asset(
+                                                'assets/images/logoInfo.png',
+                                                //fit: BoxFit.fill,
+                                                width: 20.0,
+                                                height: 20.0,
+                                              ),
+                                              iconSize: 20.0,
+                                              onPressed: () {
+                                                final List<
+                                                        MultiPriceListElement>
+                                                    listMultiPriceListElement =
+                                                    [];
+                                                if (_productList[index]
+                                                        .quantityMaxPrice !=
+                                                    QUANTITY_MAX_PRICE) {
+                                                  // There is multiprice for this product
+                                                  final item =
+                                                      MultiPriceListElement(
+                                                          _productList[index]
+                                                              .quantityMinPrice,
+                                                          _productList[index]
+                                                              .quantityMaxPrice,
+                                                          _productList[index]
+                                                              .totalAmount);
+                                                  listMultiPriceListElement
+                                                      .add(item);
+                                                  _productList[index]
+                                                      .items
+                                                      .where((element) =>
+                                                          element.partnerId !=
+                                                          1)
+                                                      .forEach((element) {
+                                                    final item =
+                                                        MultiPriceListElement(
+                                                            element
+                                                                .quantityMinPrice,
+                                                            element
+                                                                .quantityMaxPrice,
+                                                            element
+                                                                .totalAmount);
+                                                    listMultiPriceListElement
+                                                        .add(item);
+                                                  });
+                                                }
+                                                DisplayDialog
+                                                    .displayInformationAsATable(
+                                                        context,
+                                                        'Descuentos por cantidad comprada:',
+                                                        listMultiPriceListElement);
+                                              },
+                                            ),
+                                          )
+                                        : Container()
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.only(
+                                        left: 15.0, right: 15.0),
+                                    width: constraints.maxWidth,
+                                    child: Text(
+                                      _productList[index].productName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14.0,
+                                        fontFamily: 'SF Pro Display',
+                                        fontStyle: FontStyle.normal,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.fade,
+                                      maxLines: 1,
+                                      softWrap: false,
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.only(
+                                        left: 15.0, right: 15.0),
+                                    child: Text(
+                                      _productList[index].businessName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w300,
+                                        fontSize: 12.0,
+                                        fontFamily: 'SF Pro Display',
+                                        fontStyle: FontStyle.normal,
+                                        color: Color(0xFF6C6D77),
+                                      ),
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: false,
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.fromLTRB(
+                                    15.0, 0.0, 15.0, 0.0),
+                                child: Visibility(
+                                  visible: _productList[index].purchased == 0,
+                                  replacement: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        (_productList[index].purchased > 1)
+                                            ? '${_productList[index].purchased} ${_productList[index].idUnit}s.'
+                                            : '${_productList[index].purchased} ${_productList[index].idUnit}.',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 24.0,
+                                          fontFamily: 'SF Pro Display',
+                                          fontStyle: FontStyle.normal,
+                                          color: tanteLadenIconBrown,
+                                        ),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            flex: 3,
+                                            child: Visibility(
+                                              visible: (_productList[index]
+                                                          .purchased >
+                                                      1)
+                                                  ? true
+                                                  : false,
+                                              replacement: TextButton(
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.rectangle,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            18.0),
+                                                    color: tanteLadenAmber500,
                                                   ),
-                                                  child: TextButton(
-                                                    child: Container (
-                                                        alignment: Alignment.center,
-                                                        decoration: BoxDecoration(
-                                                          shape: BoxShape.rectangle,
-                                                          borderRadius: BorderRadius.circular(18.0),
-                                                          color: tanteLadenAmber500,
-                                                        ),
-                                                        padding: const EdgeInsets.symmetric(vertical: 2.0),
-                                                        child: const Text(
-                                                          '-',
-                                                          style: TextStyle(
-                                                              fontFamily: 'SF Pro Display',
-                                                              fontSize: 24,
-                                                              fontWeight: FontWeight.w900,
-                                                              color: tanteLadenIconBrown
-                                                          ),
-                                                        )
+                                                  padding: EdgeInsets.zero,
+                                                  child: IconButton(
+                                                    onPressed: null,
+                                                    icon: Image.asset(
+                                                      'assets/images/logoDeleteKlein.png',
+                                                      fit: BoxFit.fill,
                                                     ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        if (_productList[index].purchased > 1) {
-                                                          // Manage the item of the local list
-                                                          // Manage the delete of the _productList
-                                                          (_productList[index].purchased == _productList[index].minQuantitySell) ? _productList[index].purchased = 0 : _productList[index].purchased -= _productList[index].minQuantitySell;
-                                                          _productList[index].totalAmountAccordingQuantity = _productList[index].getTotalAmountAccordingQuantity();   // Update the price according the quantity purchased
-                                                        }
-                                                      });
-                                                      cart.remove(_productList[index]);
-                                                      catalog.remove(_productList[index]);
-                                                    },
+                                                    iconSize: 20.0,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
                                                   ),
                                                 ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    cart.remove(
+                                                        catalog.items[index]);
+                                                    catalog.remove(
+                                                        catalog.items[index]);
+                                                  });
+                                                },
                                               ),
-                                              const Expanded(
-                                                flex: 1,
-                                                child: SizedBox(
-                                                  width: 10.0,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 3,
-                                                child: TextButton(
-                                                  child: Container (
+                                              child: TextButton(
+                                                child: Container(
                                                     alignment: Alignment.center,
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.rectangle,
-                                                      borderRadius: BorderRadius.circular(18.0),
-                                                      //color: colorFondo,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              18.0),
                                                       color: tanteLadenAmber500,
                                                     ),
-                                                    padding: const EdgeInsets.symmetric(vertical: 2.0),
-                                                    child: const Text (
-                                                      '+',
-                                                      style: TextStyle (
-                                                        fontFamily: 'SF Pro Display',
-                                                        fontSize: 24,
-                                                        fontWeight: FontWeight.w900,
-                                                        color: tanteLadenIconBrown,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _productList[index].purchased += _productList[index].minQuantitySell;
-                                                      _productList[index].totalAmountAccordingQuantity = _productList[index].getTotalAmountAccordingQuantity();   // Update the price according the quantity purchased
-                                                    });
-                                                    cart.add(_productList[index]);
-                                                    catalog.add(_productList[index]);
-                                                  },
-                                                ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 2.0),
+                                                    child: const Text(
+                                                      '-',
+                                                      style: TextStyle(
+                                                          fontFamily:
+                                                              'SF Pro Display',
+                                                          fontSize: 24,
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                          color:
+                                                              tanteLadenIconBrown),
+                                                    )),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    if (_productList[index]
+                                                            .purchased >
+                                                        1) {
+                                                      // Manage the item of the local list
+                                                      // Manage the delete of the _productList
+                                                      (_productList[index]
+                                                                  .purchased ==
+                                                              _productList[
+                                                                      index]
+                                                                  .minQuantitySell)
+                                                          ? _productList[index]
+                                                              .purchased = 0
+                                                          : _productList[index]
+                                                                  .purchased -=
+                                                              _productList[
+                                                                      index]
+                                                                  .minQuantitySell;
+                                                      _productList[index]
+                                                              .totalAmountAccordingQuantity =
+                                                          _productList[index]
+                                                              .getTotalAmountAccordingQuantity(); // Update the price according the quantity purchased
+                                                    }
+                                                  });
+                                                  cart.remove(
+                                                      _productList[index]);
+                                                  catalog.remove(
+                                                      _productList[index]);
+                                                },
                                               ),
-                                            ],
+                                            ),
                                           ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                  'Unids. mín. venta: ${_productList[index].minQuantitySell} ${(_productList[index].minQuantitySell > 1) ? '${_productList[index].idUnit}s.' : '${_productList[index].idUnit}.'}',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w300,
-                                                    fontSize: 12.0,
-                                                    fontFamily: 'SF Pro Display',
-                                                    fontStyle: FontStyle.normal,
-                                                    color: Color(0xFF6C6D77),
-                                                  ),
-                                                  textAlign: TextAlign.start
-                                              )
-                                            ],
+                                          const Expanded(
+                                            flex: 1,
+                                            child: SizedBox(
+                                              width: 10.0,
+                                            ),
                                           ),
-                                          TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  // Manage the item of the local list
-                                                  // Manage the add of the _productList
-                                                  _productList[index].purchased += _productList[index].minQuantitySell;
-                                                  _productList[index].totalAmountAccordingQuantity = _productList[index].getTotalAmountAccordingQuantity(); // Update the price according the quantity purchased
-                                                });
-                                                catalog.add(_productList[index]);
-                                                cart.add(_productList[index]);
-                                              },
+                                          Expanded(
+                                            flex: 3,
+                                            child: TextButton(
                                               child: Container(
                                                 alignment: Alignment.center,
-                                                padding: const EdgeInsets.all(2.0),
-                                                decoration: BoxDecoration (
-                                                    shape: BoxShape.rectangle,
-                                                    borderRadius: BorderRadius.circular(4.0),
-                                                    color: tanteLadenBrown500,
-                                                    gradient: const LinearGradient(
-                                                      colors: <Color>[
-                                                        Color (0xFF833C26),
-                                                        Color (0xFF9A541F),
-                                                        Color (0xFFF9B806),
-                                                        Color (0XFFFFC107),
-                                                      ],
-                                                    )
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.rectangle,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          18.0),
+                                                  //color: colorFondo,
+                                                  color: tanteLadenAmber500,
                                                 ),
-                                                height: 40,
-                                                child: Container(
-                                                  //padding: EdgeInsets.all(3.0),
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                      shape: BoxShape.rectangle,
-                                                      borderRadius: BorderRadius.circular(4.0),
-                                                      //color: colorFondo,
-                                                      color: tanteLadenBackgroundWhite
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 2.0),
+                                                child: const Text(
+                                                  '+',
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        'SF Pro Display',
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: tanteLadenIconBrown,
                                                   ),
-                                                  child: const Text (
-                                                    'Añadir',
-                                                    style: TextStyle (
-                                                      fontFamily: 'SF Pro Display',
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w500,
-                                                      color: Colors.black,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                  //height: 38,
+                                                  textAlign: TextAlign.center,
                                                 ),
-                                              )
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _productList[index]
+                                                          .purchased +=
+                                                      _productList[index]
+                                                          .minQuantitySell;
+                                                  _productList[index]
+                                                          .totalAmountAccordingQuantity =
+                                                      _productList[index]
+                                                          .getTotalAmountAccordingQuantity(); // Update the price according the quantity purchased
+                                                });
+                                                cart.add(_productList[index]);
+                                                catalog
+                                                    .add(_productList[index]);
+                                              },
+                                            ),
                                           ),
                                         ],
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              );
-                            },
-                          ),
-                        );
-                      }
-                  )
-              )
-          );
-        }
-    );
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                              'Unids. mín. venta: ${_productList[index].minQuantitySell} ${(_productList[index].minQuantitySell > 1) ? '${_productList[index].idUnit}s.' : '${_productList[index].idUnit}.'}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w300,
+                                                fontSize: 12.0,
+                                                fontFamily: 'SF Pro Display',
+                                                fontStyle: FontStyle.normal,
+                                                color: Color(0xFF6C6D77),
+                                              ),
+                                              textAlign: TextAlign.start)
+                                        ],
+                                      ),
+                                      TextButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              // Manage the item of the local list
+                                              // Manage the add of the _productList
+                                              _productList[index].purchased +=
+                                                  _productList[index]
+                                                      .minQuantitySell;
+                                              _productList[index]
+                                                      .totalAmountAccordingQuantity =
+                                                  _productList[index]
+                                                      .getTotalAmountAccordingQuantity(); // Update the price according the quantity purchased
+                                            });
+                                            catalog.add(_productList[index]);
+                                            cart.add(_productList[index]);
+                                          },
+                                          child: Container(
+                                            alignment: Alignment.center,
+                                            padding: const EdgeInsets.all(2.0),
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.rectangle,
+                                                borderRadius:
+                                                    BorderRadius.circular(4.0),
+                                                color: tanteLadenBrown500,
+                                                gradient: const LinearGradient(
+                                                  colors: <Color>[
+                                                    Color(0xFF833C26),
+                                                    Color(0xFF9A541F),
+                                                    Color(0xFFF9B806),
+                                                    Color(0XFFFFC107),
+                                                  ],
+                                                )),
+                                            height: 40,
+                                            child: Container(
+                                              //padding: EdgeInsets.all(3.0),
+                                              alignment: Alignment.center,
+                                              decoration: BoxDecoration(
+                                                  shape: BoxShape.rectangle,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          4.0),
+                                                  //color: colorFondo,
+                                                  color:
+                                                      tanteLadenBackgroundWhite),
+                                              child: const Text(
+                                                'Añadir',
+                                                style: TextStyle(
+                                                  fontFamily: 'SF Pro Display',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              //height: 38,
+                                            ),
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  })));
+    });
   }
-  _onSearchChanged() {
+
+  void _onSearchChanged() {
     debugPrint('Entro en onS');
     //if (_throttle.isActive) _throttle.cancel();
     debugPrint('Antes de inicializar el timer _throttle');
-    _throttle = Timer (const Duration(microseconds: 100), () {
+    _throttle = Timer(const Duration(microseconds: 100), () {
       if (_searchController.text != '') {
         _getProductResults(_searchController.text);
       }
     });
   }
-  void _getProductResults (String input) {
+
+  void _getProductResults(String input) {
     List<MultiPricesProductAvail> tempProductList = [];
-    RegExp exp = RegExp (input, caseSensitive: false);
+    RegExp exp = RegExp(input, caseSensitive: false);
     var catalog = context.read<Catalog>();
     for (var i = 0; i < catalog.numItems; i++) {
       if (exp.hasMatch(catalog.getItem(i).productName)) {
         // Add the catalog element to the temporal list
-        final itemCatalog = MultiPricesProductAvail (
+        final itemCatalog = MultiPricesProductAvail(
             productId: catalog.getItem(i).productId,
             productCode: catalog.getItem(i).productCode,
             productName: catalog.getItem(i).productName,
@@ -493,8 +599,7 @@ class _LookingForProductsState extends State<LookingForProducts> {
             quantityMinPrice: catalog.getItem(i).quantityMinPrice,
             quantityMaxPrice: catalog.getItem(i).quantityMaxPrice,
             productCategoryId: catalog.getItem(i).productCategoryId,
-            rn: catalog.getItem(i).rn
-        );
+            rn: catalog.getItem(i).rn);
         if (catalog.getItem(i).numItems > 0) {
           catalog.getItem(i).items.forEach((element) {
             itemCatalog.add(element);
@@ -508,8 +613,9 @@ class _LookingForProductsState extends State<LookingForProducts> {
     });
   }
 }
+
 class _AccentColorOverride extends StatelessWidget {
-  const _AccentColorOverride ({required this.color, required this.child});
+  const _AccentColorOverride({required this.color, required this.child});
 
   final Color color;
   final Widget child;

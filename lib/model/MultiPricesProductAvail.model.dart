@@ -40,7 +40,7 @@ class MultiPricesProductAvail extends ProductAvail {
   factory MultiPricesProductAvail.fromJson (Map<String, dynamic> json) {
     return MultiPricesProductAvail (
       productId: int.parse(json['PRODUCT_ID'].toString()),
-      productCode: int.parse(json['PRODUCT_CODE'].toString()),
+      productCode: json['PRODUCT_CODE']?.toString() ?? '',
       productName: json['PRODUCT_NAME'],
       productNameLong: json['PRODUCT_NAME_LONG'],
       productDescription: json['PRODUCT_DESCRIPTION'] ?? '',
