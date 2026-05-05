@@ -33,7 +33,7 @@ class PurchaseLine {
   final int orderId;
   final String providerName;
   final int productId;
-  final int productCode;
+  final String productCode;
   final String productName;
   String allStatus;
   String statusId;
@@ -63,7 +63,7 @@ class PurchaseLine {
         orderId: int.parse(json['ORDER_ID'].toString()),
         providerName: json['PROVIDER_NAME'],
         productId: int.parse(json['PRODUCT_ID'].toString()),
-        productCode: int.parse(json['PRODUCT_CODE'].toString()),
+        productCode: json['PRODUCT_CODE']?.toString() ?? '',
         productName: json['PRODUCT_NAME'],
         allStatus: json['ALL_STATUS'],
         statusId: json['STATUS_ID'],
