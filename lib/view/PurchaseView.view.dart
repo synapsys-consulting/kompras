@@ -13,58 +13,113 @@ import 'package:kompras/util/configuration.util.dart';
 import 'package:http/http.dart' as http;
 import 'package:kompras/view/PurchaseDetailView.view.dart';
 
-class PurchaseView extends StatelessWidget {
+bool _isClosed(Purchase p) => p.statusId == 'A' || p.statusId == 'N';
+
+class PurchaseView extends StatefulWidget {
   final int userId;
   final int partnerId;
   final String userRole;
 
-  PurchaseView(
+  const PurchaseView(
       {super.key,
       required this.userId,
       required this.partnerId,
       required this.userRole});
 
+  @override
+  State<PurchaseView> createState() => _PurchaseViewState();
+}
+
+class _PurchaseViewState extends State<PurchaseView> {
   final PurchaseController _controller = PurchaseController();
+  late Future<List<Purchase>> _future;
+  List<Purchase>? _master;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  Future<List<Purchase>> _load() async {
+    final list = await _controller.getPurchasesByUserId(widget.userId);
+    _master = list;
+    return list;
+  }
+
+  Future<void> _refresh() async {
+    final list = await _controller.getPurchasesByUserId(widget.userId);
+    if (!mounted) return;
+    setState(() {
+      _master = list;
+      _future = Future.value(list);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0.0,
-        leading: IconButton(
-          icon: Image.asset('assets/images/leftArrow.png'),
-          onPressed: () {
-            Navigator.popUntil(context, ModalRoute.withName('/'));
-          },
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0.0,
+          leading: IconButton(
+            icon: Image.asset('assets/images/leftArrow.png'),
+            onPressed: () {
+              Navigator.popUntil(context, ModalRoute.withName('/'));
+            },
+          ),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'En flujo'),
+              Tab(text: 'Servidos/Anulados'),
+            ],
+          ),
         ),
+        body: FutureBuilder<List<Purchase>>(
+            future: _future,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final all = _master ?? snapshot.data!;
+                final open = all.where((p) => !_isClosed(p)).toList();
+                final closed = all.where(_isClosed).toList();
+                return TabBarView(
+                  children: [
+                    _buildTab(open, 'No hay compras en flujo.'),
+                    _buildTab(closed, 'No hay compras servidas.'),
+                  ],
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('Error. ${snapshot.error}')]),
+                );
+              } else {
+                return const Center(
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+            }),
       ),
-      body: FutureBuilder<List<Purchase>>(
-          future: _controller.getPurchasesByUserId(userId),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return ResponsiveWidget(
-                largeScreen:
-                    _LargeScreen(snapshot.data!, userId, partnerId, userRole),
-                mediumScreen:
-                    _MediumScreen(snapshot.data!, userId, partnerId, userRole),
-                smallScreen:
-                    _SmallScreen(snapshot.data!, userId, partnerId, userRole),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [Text('Error. ${snapshot.error}')]),
-              );
-            } else {
-              return const Center(
-                child: SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-          }),
+    );
+  }
+
+  Widget _buildTab(List<Purchase> items, String emptyMessage) {
+    if (items.isEmpty) {
+      return Center(child: Text(emptyMessage));
+    }
+    return ResponsiveWidget(
+      largeScreen: _LargeScreen(
+          items, widget.userId, widget.partnerId, widget.userRole, _refresh),
+      mediumScreen: _MediumScreen(
+          items, widget.userId, widget.partnerId, widget.userRole, _refresh),
+      smallScreen: _SmallScreen(
+          items, widget.userId, widget.partnerId, widget.userRole, _refresh),
     );
   }
 }
@@ -74,8 +129,9 @@ class _SmallScreen extends StatefulWidget {
   final int userId;
   final int partnerId;
   final String userRole;
-  const _SmallScreen(
-      this.itemsPurchase, this.userId, this.partnerId, this.userRole);
+  final Future<void> Function() onChanged;
+  const _SmallScreen(this.itemsPurchase, this.userId, this.partnerId,
+      this.userRole, this.onChanged);
 
   @override
   _SmallScreenState createState() => _SmallScreenState();
@@ -385,28 +441,7 @@ class _SmallScreenState extends State<_SmallScreen> {
                                   if (res.statusCode == 200) {
                                     _showPleaseWait(false);
                                     debugPrint('The Rest API has responsed.');
-                                    final List<Map<String, dynamic>>
-                                        resultListJson = json
-                                            .decode(res.body)[
-                                                'nextStatesToTransitionTo']
-                                            .cast<Map<String, dynamic>>();
-                                    debugPrint(
-                                        'Entre medias de la api RESPONSE.');
-                                    final List<PurchaseStatus>
-                                        resultListProducts = resultListJson
-                                            .map<PurchaseStatus>((json) =>
-                                                PurchaseStatus.fromJson(json))
-                                            .toList();
-                                    setState(() {
-                                      widget.itemsPurchase[index].allStatus =
-                                          widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo
-                                              .elementAt(0)
-                                              .statusName;
-                                      widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo =
-                                          resultListProducts;
-                                    });
+                                    await widget.onChanged();
                                   } else {
                                     _showPleaseWait(false);
                                     if (!context.mounted) return;
@@ -469,25 +504,7 @@ class _SmallScreenState extends State<_SmallScreen> {
                                   if (res.statusCode == 200) {
                                     _showPleaseWait(false);
                                     debugPrint('The Rest API has responsed.');
-                                    final List<Map<String, dynamic>>
-                                        resultListJson = json
-                                            .decode(res.body)[
-                                                'nextStatesToTransitionTo']
-                                            .cast<Map<String, dynamic>>();
-                                    debugPrint(
-                                        'Entre medias de la api RESPONSE.');
-                                    final List<PurchaseStatus>
-                                        resultListProducts = resultListJson
-                                            .map<PurchaseStatus>((json) =>
-                                                PurchaseStatus.fromJson(json))
-                                            .toList();
-                                    setState(() {
-                                      widget.itemsPurchase[index].allStatus =
-                                          result.statusName;
-                                      widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo =
-                                          resultListProducts;
-                                    });
+                                    await widget.onChanged();
                                   } else {
                                     _showPleaseWait(false);
                                     if (!context.mounted) return;
@@ -524,16 +541,7 @@ class _SmallScreenState extends State<_SmallScreen> {
                               widget.partnerId,
                               widget.userRole)));
                   if (purchaseDetailStateChanged) {
-                    // I load the data again
-                    widget.itemsPurchase.clear();
-                    final PurchaseController controller = PurchaseController();
-                    final newPurchaseList =
-                        await controller.getPurchasesByUserId(widget.userId);
-                    if (newPurchaseList.isNotEmpty) {}
-                    for (var element in newPurchaseList) {
-                      widget.itemsPurchase.add(element);
-                    }
-                    setState(() {});
+                    await widget.onChanged();
                   }
                 },
               ));
@@ -557,8 +565,9 @@ class _MediumScreen extends StatefulWidget {
   final int userId;
   final int partnerId;
   final String userRole;
-  const _MediumScreen(
-      this.itemsPurchase, this.userId, this.partnerId, this.userRole);
+  final Future<void> Function() onChanged;
+  const _MediumScreen(this.itemsPurchase, this.userId, this.partnerId,
+      this.userRole, this.onChanged);
 
   @override
   _MediumScreenState createState() => _MediumScreenState();
@@ -868,28 +877,7 @@ class _MediumScreenState extends State<_MediumScreen> {
                                   if (res.statusCode == 200) {
                                     _showPleaseWait(false);
                                     debugPrint('The Rest API has responsed.');
-                                    final List<Map<String, dynamic>>
-                                        resultListJson = json
-                                            .decode(res.body)[
-                                                'nextStatesToTransitionTo']
-                                            .cast<Map<String, dynamic>>();
-                                    debugPrint(
-                                        'Entre medias de la api RESPONSE.');
-                                    final List<PurchaseStatus>
-                                        resultListProducts = resultListJson
-                                            .map<PurchaseStatus>((json) =>
-                                                PurchaseStatus.fromJson(json))
-                                            .toList();
-                                    setState(() {
-                                      widget.itemsPurchase[index].allStatus =
-                                          widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo
-                                              .elementAt(0)
-                                              .statusName;
-                                      widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo =
-                                          resultListProducts;
-                                    });
+                                    await widget.onChanged();
                                   } else {
                                     _showPleaseWait(false);
                                     if (!context.mounted) return;
@@ -952,25 +940,7 @@ class _MediumScreenState extends State<_MediumScreen> {
                                   if (res.statusCode == 200) {
                                     _showPleaseWait(false);
                                     debugPrint('The Rest API has responsed.');
-                                    final List<Map<String, dynamic>>
-                                        resultListJson = json
-                                            .decode(res.body)[
-                                                'nextStatesToTransitionTo']
-                                            .cast<Map<String, dynamic>>();
-                                    debugPrint(
-                                        'Entre medias de la api RESPONSE.');
-                                    final List<PurchaseStatus>
-                                        resultListProducts = resultListJson
-                                            .map<PurchaseStatus>((json) =>
-                                                PurchaseStatus.fromJson(json))
-                                            .toList();
-                                    setState(() {
-                                      widget.itemsPurchase[index].allStatus =
-                                          result.statusName;
-                                      widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo =
-                                          resultListProducts;
-                                    });
+                                    await widget.onChanged();
                                   } else {
                                     _showPleaseWait(false);
                                     if (!context.mounted) return;
@@ -1007,16 +977,7 @@ class _MediumScreenState extends State<_MediumScreen> {
                               widget.partnerId,
                               widget.userRole)));
                   if (purchaseDetailStateChanged) {
-                    // I load the data again
-                    widget.itemsPurchase.clear();
-                    final PurchaseController controller = PurchaseController();
-                    final newPurchaseList =
-                        await controller.getPurchasesByUserId(widget.userId);
-                    if (newPurchaseList.isNotEmpty) {}
-                    for (var element in newPurchaseList) {
-                      widget.itemsPurchase.add(element);
-                    }
-                    setState(() {});
+                    await widget.onChanged();
                   }
                 },
               ));
@@ -1040,8 +1001,9 @@ class _LargeScreen extends StatefulWidget {
   final int userId;
   final int partnerId;
   final String userRole;
-  const _LargeScreen(
-      this.itemsPurchase, this.userId, this.partnerId, this.userRole);
+  final Future<void> Function() onChanged;
+  const _LargeScreen(this.itemsPurchase, this.userId, this.partnerId,
+      this.userRole, this.onChanged);
 
   @override
   _LargeScreenState createState() => _LargeScreenState();
@@ -1351,28 +1313,7 @@ class _LargeScreenState extends State<_LargeScreen> {
                                   if (res.statusCode == 200) {
                                     _showPleaseWait(false);
                                     debugPrint('The Rest API has responsed.');
-                                    final List<Map<String, dynamic>>
-                                        resultListJson = json
-                                            .decode(res.body)[
-                                                'nextStatesToTransitionTo']
-                                            .cast<Map<String, dynamic>>();
-                                    debugPrint(
-                                        'Entre medias de la api RESPONSE.');
-                                    final List<PurchaseStatus>
-                                        resultListProducts = resultListJson
-                                            .map<PurchaseStatus>((json) =>
-                                                PurchaseStatus.fromJson(json))
-                                            .toList();
-                                    setState(() {
-                                      widget.itemsPurchase[index].allStatus =
-                                          widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo
-                                              .elementAt(0)
-                                              .statusName;
-                                      widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo =
-                                          resultListProducts;
-                                    });
+                                    await widget.onChanged();
                                   } else {
                                     _showPleaseWait(false);
                                     if (!context.mounted) return;
@@ -1435,25 +1376,7 @@ class _LargeScreenState extends State<_LargeScreen> {
                                   if (res.statusCode == 200) {
                                     _showPleaseWait(false);
                                     debugPrint('The Rest API has responsed.');
-                                    final List<Map<String, dynamic>>
-                                        resultListJson = json
-                                            .decode(res.body)[
-                                                'nextStatesToTransitionTo']
-                                            .cast<Map<String, dynamic>>();
-                                    debugPrint(
-                                        'Entre medias de la api RESPONSE.');
-                                    final List<PurchaseStatus>
-                                        resultListProducts = resultListJson
-                                            .map<PurchaseStatus>((json) =>
-                                                PurchaseStatus.fromJson(json))
-                                            .toList();
-                                    setState(() {
-                                      widget.itemsPurchase[index].allStatus =
-                                          result.statusName;
-                                      widget.itemsPurchase[index]
-                                              .possibleStatusToTransitionTo =
-                                          resultListProducts;
-                                    });
+                                    await widget.onChanged();
                                   } else {
                                     _showPleaseWait(false);
                                     if (!context.mounted) return;
@@ -1490,16 +1413,7 @@ class _LargeScreenState extends State<_LargeScreen> {
                               widget.partnerId,
                               widget.userRole)));
                   if (purchaseDetailStateChanged) {
-                    // I load the data again
-                    widget.itemsPurchase.clear();
-                    final PurchaseController controller = PurchaseController();
-                    final newPurchaseList =
-                        await controller.getPurchasesByUserId(widget.userId);
-                    if (newPurchaseList.isNotEmpty) {}
-                    for (var element in newPurchaseList) {
-                      widget.itemsPurchase.add(element);
-                    }
-                    setState(() {});
+                    await widget.onChanged();
                   }
                 },
               ));
