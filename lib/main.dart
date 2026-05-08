@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kompras/model/AddressList.model.dart';
 import 'package:kompras/model/DefaultAddressList.model.dart';
 import 'package:provider/provider.dart';
@@ -16,9 +17,9 @@ class MyHttpOverrides extends HttpOverrides {
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
         //final isValidHost = host == "54.87.206.162";     // PRODUCTION
 
-        //final isValidHost = host == "98.86.108.128"; // PRODUCTION
+        final isValidHost = host == "98.86.108.128"; // PRODUCTION
 
-        final isValidHost = host == "192.168.1.36"; // DEVELOPMENT
+        //final isValidHost = host == "192.168.1.36"; // DEVELOPMENT
         //final isValidHost = host == "127.0.0.1"; // DEVELOPMENT
         //final isValidHost = host == "3.92.229.110";  // PRUEBA
         //final isValidHost = host == "192.168.1.134";
@@ -52,6 +53,12 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Comprando',
         theme: _tanteLadenTheme,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('es', 'ES')],
         home: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
     );

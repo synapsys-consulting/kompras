@@ -1,6 +1,6 @@
 //const SERVER_IP = 'https://192.168.2.106:9010/server';  // DEVELOPMENT
 
-const SERVER_IP = 'http://192.168.1.36:9010/server'; // DEVELOPMENT
+//const SERVER_IP = 'http://192.168.1.36:9010/server'; // DEVELOPMENT
 
 //const SERVER_IP = 'http://192.168.2.106:9010/server';  // DEVELOPMENT
 //const SERVER_IP = 'http://192.168.18.101:9010/server';  // DEVELOPMENT
@@ -9,8 +9,8 @@ const SERVER_IP = 'http://192.168.1.36:9010/server'; // DEVELOPMENT
 //const SERVER_IP = 'http://54.87.206.162:9000/server';     // PRODUCTION
 //const SERVER_IP = 'http://ec2-54-87-206-162.compute-1.amazonaws.com:9000/server';     // PRODUCTION
 
-//const SERVER_IP =
-//    'http://ec2-98-86-108-128.compute-1.amazonaws.com:9000/server'; // PRODUCTION
+const SERVER_IP =
+    'http://ec2-98-86-108-128.compute-1.amazonaws.com:9000/server'; // PRODUCTION
 
 //const SERVER_IP = 'http://54.87.206.162:9000/server';     // PRODUCTION
 //const SERVER_IP = 'https://192.168.1.134:9010/server';

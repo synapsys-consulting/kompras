@@ -34,21 +34,34 @@ class _PurchaseViewState extends State<PurchaseView> {
   final PurchaseController _controller = PurchaseController();
   late Future<List<Purchase>> _future;
   List<Purchase>? _master;
+  late DateTime _dateFrom;
+  late DateTime _dateTo;
 
   @override
   void initState() {
     super.initState();
+    final DateTime now = DateTime.now();
+    _dateTo = DateTime(now.year, now.month, now.day);
+    _dateFrom = _dateTo.subtract(const Duration(days: 60));
     _future = _load();
   }
 
   Future<List<Purchase>> _load() async {
-    final list = await _controller.getPurchasesByUserId(widget.userId);
+    final list = await _controller.getPurchasesByUserId(
+      widget.userId,
+      dateFrom: _dateFrom,
+      dateTo: _dateTo,
+    );
     _master = list;
     return list;
   }
 
   Future<void> _refresh() async {
-    final list = await _controller.getPurchasesByUserId(widget.userId);
+    final list = await _controller.getPurchasesByUserId(
+      widget.userId,
+      dateFrom: _dateFrom,
+      dateTo: _dateTo,
+    );
     if (!mounted) return;
     setState(() {
       _master = list;
@@ -86,7 +99,7 @@ class _PurchaseViewState extends State<PurchaseView> {
                 return TabBarView(
                   children: [
                     _buildTab(open, 'No hay compras en flujo.'),
-                    _buildTab(closed, 'No hay compras servidas.'),
+                    _buildClosedTab(closed),
                   ],
                 );
               } else if (snapshot.hasError) {
@@ -120,6 +133,120 @@ class _PurchaseViewState extends State<PurchaseView> {
           items, widget.userId, widget.partnerId, widget.userRole, _refresh),
       smallScreen: _SmallScreen(
           items, widget.userId, widget.partnerId, widget.userRole, _refresh),
+    );
+  }
+
+  Widget _buildClosedTab(List<Purchase> closed) {
+    return Column(
+      children: [
+        _DateRangeBar(
+          from: _dateFrom,
+          to: _dateTo,
+          onSearch: (DateTime f, DateTime t) async {
+            setState(() {
+              _dateFrom = f;
+              _dateTo = t;
+            });
+            await _refresh();
+          },
+        ),
+        Expanded(
+          child: closed.isEmpty
+              ? const Center(child: Text('No hay compras servidas en ese rango.'))
+              : ResponsiveWidget(
+                  largeScreen: _LargeScreen(closed, widget.userId, widget.partnerId, widget.userRole, _refresh),
+                  mediumScreen: _MediumScreen(closed, widget.userId, widget.partnerId, widget.userRole, _refresh),
+                  smallScreen: _SmallScreen(closed, widget.userId, widget.partnerId, widget.userRole, _refresh),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DateRangeBar extends StatefulWidget {
+  final DateTime from;
+  final DateTime to;
+  final Future<void> Function(DateTime from, DateTime to) onSearch;
+  const _DateRangeBar({required this.from, required this.to, required this.onSearch});
+
+  @override
+  State<_DateRangeBar> createState() => _DateRangeBarState();
+}
+
+class _DateRangeBarState extends State<_DateRangeBar> {
+  late DateTime _from;
+  late DateTime _to;
+
+  @override
+  void initState() {
+    super.initState();
+    _from = widget.from;
+    _to = widget.to;
+  }
+
+  Future<void> _pick(bool isFrom) async {
+    final DateTime initial = isFrom ? _from : _to;
+    final DateTime picked = (await showDatePicker(
+          context: context,
+          initialDate: initial,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now(),
+          locale: const Locale('es', 'ES'),
+        )) ??
+        initial;
+    setState(() {
+      if (isFrom) {
+        _from = DateTime(picked.year, picked.month, picked.day);
+      } else {
+        _to = DateTime(picked.year, picked.month, picked.day);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool valid = !_from.isAfter(_to);
+    final String fromLabel = DateFormat('dd/MM/yyyy', 'es_ES').format(_from);
+    final String toLabel = DateFormat('dd/MM/yyyy', 'es_ES').format(_to);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Row(
+        children: [
+          Expanded(child: _DateField(label: 'Desde', value: fromLabel, valid: valid, onTap: () => _pick(true))),
+          const SizedBox(width: 8),
+          Expanded(child: _DateField(label: 'Hasta', value: toLabel, valid: valid, onTap: () => _pick(false))),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: valid ? () => widget.onSearch(_from, _to) : null,
+            child: const Text('Buscar'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool valid;
+  final VoidCallback onTap;
+  const _DateField({required this.label, required this.value, required this.valid, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          errorText: valid ? null : 'Rango inválido',
+        ),
+        child: Text(value, style: TextStyle(color: valid ? Colors.black : Colors.red)),
+      ),
     );
   }
 }
