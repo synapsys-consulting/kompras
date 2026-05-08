@@ -6,8 +6,11 @@ import 'package:kompras/util/configuration.util.dart';
 import 'package:http/http.dart' as http;
 
 class PurchaseController {
-  Future<List<Purchase>> getPurchasesByUserId (int userId) async {
-    final Uri url = Uri.parse('$SERVER_IP/getPurchaseByUserId/$userId');
+  Future<List<Purchase>> getPurchasesByUserId (int userId, {DateTime? dateFrom, DateTime? dateTo}) async {
+    final String qp = (dateFrom != null && dateTo != null)
+        ? '?dateFrom=${_iso(dateFrom)}&dateTo=${_iso(dateTo)}'
+        : '';
+    final Uri url = Uri.parse('$SERVER_IP/getPurchaseByUserId/$userId$qp');
     final http.Response res = await http.get(
         url,
         headers: <String, String>{
@@ -30,4 +33,7 @@ class PurchaseController {
       return resultListPurchase;
     }
   }
+
+  String _iso(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }

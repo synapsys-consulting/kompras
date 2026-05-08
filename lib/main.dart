@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kompras/model/AddressList.model.dart';
 import 'package:kompras/model/DefaultAddressList.model.dart';
 import 'package:provider/provider.dart';
@@ -52,6 +53,12 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Comprando',
         theme: _tanteLadenTheme,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('es', 'ES')],
         home: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
     );
